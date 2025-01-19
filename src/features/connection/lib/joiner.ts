@@ -1,6 +1,5 @@
 import { updateStatus } from "@/features/logging/lib";
 
-// Joiner related
 const joinChatBtn = document.getElementById("joinChatBtn")!;
 const offerInput = document.getElementById(
   "offerInput"
@@ -19,12 +18,14 @@ export class JoinerManager {
         const offer = JSON.parse(offerInput.value);
         await this.pc.setRemoteDescription(offer);
 
-        const answer = await this.pc.createAnswer();
-        await this.pc.setLocalDescription(answer);
-        answerOutput.value = JSON.stringify(answer);
-        answerOutput.select();
-        updateStatus("Answer created! Share it back with the creator.");
+        await this.pc.setLocalDescription(await this.pc.createAnswer());
+        this.pc.onicecandidate = async ({ candidate }) => {
+          answerOutput.value = JSON.stringify(this.pc?.localDescription);
+          answerOutput.select();
+          updateStatus("Answer created! Share it back with the creator.");
+        };
       } catch (err) {
+        alert("bebra");
         updateStatus("Error joining chat: " + err);
       }
     });
