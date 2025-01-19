@@ -1,0 +1,295 @@
+---
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Textarea } from "@shared/ui/textarea";
+---
+
+<div class="max-w-2xl w-full mx-auto border rounded-lg shadow-lg p-6">
+  <h1 class="text-2xl font-bold mb-6">WebRTC Chat</h1>
+
+  <div class="space-y-6">
+    <div class="rounded-md">
+      <p id="stat" class="text-sm text-gray-600"></p>
+    </div>
+
+    <div class="space-y-3">
+      <div class="flex items-center gap-3">
+        <Button id="button"> Create Offer </Button>
+      </div>
+      <Textarea
+        id="offer"
+        placeholder="Paste offer here. Press Enter to proceed."
+      />
+    </div>
+
+    <div class="space-y-2">
+      <Textarea id="answer" placeholder="Answer" />
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <Input id="chat" type="text" placeholder="Type your message..." />
+      </div>
+
+      <!-- <video id="remoteVideo" autoplay muted></video> -->
+      <div class="rounded-md p-4 h-64 overflow-y-auto">
+        <video id="sharedVideo" class="w-full rounded-lg" controls></video>
+        <pre
+          id="output"
+          class="text-sm text-gray-600 whitespace-pre-wrap">
+Chat: </pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const output = document.getElementById("output") as HTMLPreElement;
+  const button = document.getElementById("button") as HTMLButtonElement;
+  const offer = document.getElementById("offer") as HTMLTextAreaElement;
+  const answer = document.getElementById("answer") as HTMLTextAreaElement;
+  const chat = document.getElementById("chat") as HTMLInputElement;
+  const videoPlayer = document.getElementById(
+    "sharedVideo"
+  ) as HTMLVideoElement;
+
+  const config = {
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+  };
+
+  let pc: RTCPeerConnection;
+  let dc: RTCDataChannel;
+  let syncChannel: RTCDataChannel;
+  // let localStream: MediaStream;
+
+  interface VideoCommand {
+    type: "play" | "pause" | "seek" | "sync-request" | "sync-response";
+    timestamp?: number;
+    currentTime?: number;
+  }
+
+  async function initializeWebRTC() {
+    try {
+      // Get the user's media stream (audio and video)
+      // localStream = await navigator.mediaDevices.getUserMedia({
+      //   video: true,
+      //   audio: true,
+      // });
+
+      pc = new RTCPeerConnection(config);
+      // localStream
+      //   .getTracks()
+      //   .forEach((track) => pc.addTrack(track, localStream));
+
+      // Create data channels for chat and video sync
+      dc = pc.createDataChannel("chat", { negotiated: true, id: 0 });
+      syncChannel = pc.createDataChannel("sync", { negotiated: true, id: 1 });
+
+      setupVideoSync();
+      setupChatHandlers();
+      setupConnectionHandlers();
+
+      button.addEventListener("click", createOffer);
+    } catch (err) {
+      console.error("Error initializing WebRTC: ", err);
+    }
+  }
+
+  function setupVideoSync() {
+    // Load video from S3 (replace with your S3 URL)
+    videoPlayer.src = "./fedor.mp4";
+
+    let suppressEvents = false; // Flag to suppress event handling
+
+    // Listen for video events
+    videoPlayer.addEventListener("play", () => {
+      if (!suppressEvents) {
+        sendVideoCommand({
+          type: "play",
+          currentTime: videoPlayer.currentTime,
+        });
+      }
+    });
+
+    videoPlayer.addEventListener("pause", () => {
+      if (!suppressEvents) {
+        sendVideoCommand({
+          type: "pause",
+          currentTime: videoPlayer.currentTime,
+        });
+      }
+    });
+
+    // Handle sync messages
+    syncChannel.onmessage = async (event) => {
+      const command = JSON.parse(event.data);
+
+      switch (command.type) {
+        case "play":
+          if (
+            Math.abs(videoPlayer.currentTime - (command.currentTime || 0)) > 0.5
+          ) {
+            videoPlayer.currentTime = command.currentTime || 0;
+          }
+          suppressEvents = true;
+          await videoPlayer.play();
+          suppressEvents = false;
+          break;
+
+        case "pause":
+          suppressEvents = true;
+          videoPlayer.pause();
+          if (command.currentTime) {
+            videoPlayer.currentTime = command.currentTime;
+          }
+          suppressEvents = false;
+          break;
+
+        case "seek":
+          if (command.currentTime !== undefined) {
+            suppressEvents = true;
+            videoPlayer.currentTime = command.currentTime;
+            suppressEvents = false;
+          }
+          break;
+
+        case "sync-request":
+          sendVideoCommand({
+            type: "sync-response",
+            currentTime: videoPlayer.currentTime,
+            timestamp: Date.now(),
+          });
+          break;
+
+        case "sync-response":
+          handleSyncResponse(command);
+          break;
+      }
+    };
+
+    // Periodic sync check
+    setInterval(() => {
+      if (syncChannel.readyState === "open") {
+        sendVideoCommand({ type: "sync-request", timestamp: Date.now() });
+      }
+    }, 5000);
+  }
+
+  function sendVideoCommand(command: VideoCommand) {
+    if (syncChannel.readyState === "open") {
+      syncChannel.send(JSON.stringify(command));
+    }
+  }
+
+  function handleSyncResponse(command: VideoCommand) {
+    if (command.currentTime === undefined || command.timestamp === undefined)
+      return;
+
+    const latency = (Date.now() - command.timestamp) / 2;
+    const estimatedCurrentTime = command.currentTime + latency / 1000;
+
+    if (Math.abs(videoPlayer.currentTime - estimatedCurrentTime) > 0.5) {
+      videoPlayer.currentTime = estimatedCurrentTime;
+    }
+  }
+
+  function setupChatHandlers() {
+    const log = (msg: string) => {
+      output.innerHTML += `<br>${msg}`;
+      output.scrollTop = output.scrollHeight;
+    };
+
+    dc.onopen = () => chat.focus();
+    dc.onmessage = (e) => log(`<span class="text-blue-600">> ${e.data}</span>`);
+
+    chat.onkeypress = function (e) {
+      if (e.keyCode != 13) return;
+      dc.send(chat.value);
+      log(`<span class="text-green-600">${chat.value}</span>`);
+      chat.value = "";
+    };
+  }
+
+  function setupConnectionHandlers() {
+    function handleChange() {
+      const connectionState = pc.connectionState;
+      const iceState = pc.iceConnectionState;
+
+      const getStatusColor = (
+        state: RTCPeerConnectionState | RTCIceConnectionState
+      ) => {
+        switch (state) {
+          case "connected":
+            return "text-green-600";
+          case "disconnected":
+            return "text-red-600";
+          case "connecting":
+            return "text-yellow-600";
+          default:
+            return "text-gray-600";
+        }
+      };
+
+      const stat = `
+                <span class="font-semibold">Connection State:</span> 
+                <span class="${getStatusColor(connectionState)}">${connectionState}</span> 
+                <span class="font-semibold ml-4">ICE Connection State:</span> 
+                <span class="${getStatusColor(iceState)}">${iceState}</span>
+            `;
+
+      document.getElementById("stat")!.innerHTML = stat;
+      console.log(
+        `%c${new Date().toISOString()}: ConnectionState: %c${connectionState} %cIceConnectionState: %c${iceState}`,
+        "color:yellow",
+        "color:orange",
+        "color:yellow",
+        "color:orange"
+      );
+    }
+
+    offer.onkeypress = async function (e) {
+      if (e.keyCode != 13 || pc.signalingState != "stable") return;
+      button.disabled = offer.disabled = true;
+      await pc.setRemoteDescription({
+        type: "offer",
+        sdp: offer.value.endsWith("\n") ? offer.value : `${offer.value}\n`,
+      });
+      await pc.setLocalDescription(await pc.createAnswer());
+      pc.onicecandidate = ({ candidate }) => {
+        // if (candidate) return;
+        answer.focus();
+        answer.value = pc?.localDescription?.sdp as string;
+        answer.select();
+      };
+    };
+
+    answer.onkeypress = function (e) {
+      if (e.keyCode != 13 || pc.signalingState != "have-local-offer") return;
+      answer.disabled = true;
+      pc.setRemoteDescription({
+        type: "answer",
+        sdp: answer.value.endsWith("\n") ? answer.value : `${answer.value}\n`,
+      });
+    };
+
+    pc.onconnectionstatechange = handleChange;
+    pc.oniceconnectionstatechange = handleChange;
+
+    handleChange();
+  }
+
+  async function createOffer() {
+    button.disabled = true;
+    button.classList.add("opacity-50", "cursor-not-allowed");
+    await pc.setLocalDescription(await pc.createOffer());
+    pc.onicecandidate = ({ candidate }) => {
+      // if (!candidate) {
+      offer.value = pc?.localDescription?.sdp as string;
+      offer.select();
+      answer.placeholder = "Paste answer here. Press Enter to proceed.";
+      // }
+    };
+  }
+
+  document.addEventListener("DOMContentLoaded", initializeWebRTC);
+</script>

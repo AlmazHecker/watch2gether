@@ -1,0 +1,46 @@
+---
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Textarea } from "@shared/ui/textarea";
+---
+
+<div class="max-w-2xl w-full mx-auto border rounded-lg shadow-lg p-6">
+  <h1 class="text-2xl font-bold mb-6">WebRTC Chat</h1>
+
+  <div class="space-y-6">
+    <div class="rounded-md">
+      <p id="stat" class="text-sm text-gray-600"></p>
+    </div>
+
+    <div class="space-y-3">
+      <div class="flex items-center gap-3">
+        <Button id="button"> Create Offer </Button>
+      </div>
+      <Textarea
+        id="offer"
+        placeholder="Paste offer here. Press Enter to proceed."
+      />
+    </div>
+
+    <div class="space-y-2">
+      <Textarea id="answer" placeholder="Answer" />
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <Input id="chat" type="text" placeholder="Type your message..." />
+      </div>
+
+      <!-- <video id="remoteVideo" autoplay muted></video> -->
+      <div class="rounded-md p-4 h-64 overflow-y-auto">
+        <video id="sharedVideo" class="w-full rounded-lg" controls></video>
+        <pre
+          id="output"
+          class="text-sm text-gray-600 whitespace-pre-wrap">
+Chat: </pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../../webrtc/connection/lib/initialize.ts"></script>

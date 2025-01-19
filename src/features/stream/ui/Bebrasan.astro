@@ -1,0 +1,214 @@
+---
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Textarea } from "@shared/ui/textarea";
+---
+
+<div class="max-w-2xl w-full mx-auto border rounded-lg shadow-lg p-6">
+  <h1 class="text-2xl font-bold mb-6">WebRTC Chat</h1>
+
+  <div class="space-y-6">
+    <!-- Connection Status -->
+    <div class="rounded-md">
+      <p id="status" class="text-sm text-gray-600"></p>
+    </div>
+
+    <!-- Role Selection -->
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <Button id="createBtn" class="w-full">Create Chat</Button>
+      <Button id="joinBtn" class="w-full">Join Chat</Button>
+    </div>
+
+    <!-- Creator Section -->
+    <div id="creatorSection" class="space-y-4 hidden">
+      <Button id="createOfferBtn" class="w-full">Create Offer</Button>
+      <div class="space-y-2">
+        <label class="text-sm text-gray-600">Your Offer (Share this):</label>
+        <Textarea id="offerOutput" rows="4" readonly class="w-full" />
+      </div>
+      <div class="space-y-2">
+        <label class="text-sm text-gray-600">Paste Answer Here:</label>
+        <Textarea
+          id="answerInput"
+          rows="4"
+          placeholder="Paste the answer you received here"
+          class="w-full"
+        />
+        <Button id="connectBtn" class="w-full">Connect</Button>
+      </div>
+    </div>
+
+    <!-- Joiner Section -->
+    <div id="joinerSection" class="space-y-4 hidden">
+      <div class="space-y-2">
+        <label class="text-sm text-gray-600">Paste Offer Here:</label>
+        <Textarea
+          id="offerInput"
+          rows="4"
+          placeholder="Paste the offer you received here"
+          class="w-full"
+        />
+      </div>
+      <Button id="joinChatBtn" class="w-full">Join Chat</Button>
+      <div class="space-y-2">
+        <label class="text-sm text-gray-600">Your Answer (Share this):</label>
+        <Textarea id="answerOutput" rows="4" readonly class="w-full" />
+      </div>
+    </div>
+
+    <!-- Chat Section -->
+    <div id="chatSection" class="space-y-4 hidden">
+      <div class="flex gap-2">
+        <Input
+          id="messageInput"
+          type="text"
+          placeholder="Type your message..."
+          class="flex-1"
+        />
+        <Button id="sendBtn">Send</Button>
+      </div>
+      <div class="h-64 overflow-y-auto p-4 border rounded-lg">
+        <div id="messages" class="space-y-2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Initialize WebRTC components
+  let peerConnection: RTCPeerConnection | null = null;
+  let dataChannel: RTCDataChannel | null = null;
+
+  // DOM Elements
+  const statusEl = document.getElementById("status");
+  const createBtn = document.getElementById("createBtn");
+  const joinBtn = document.getElementById("joinBtn");
+  const creatorSection = document.getElementById("creatorSection");
+  const joinerSection = document.getElementById("joinerSection");
+  const chatSection = document.getElementById("chatSection");
+  const createOfferBtn = document.getElementById("createOfferBtn");
+  const offerOutput = document.getElementById("offerOutput");
+  const offerInput = document.getElementById("offerInput");
+  const answerInput = document.getElementById("answerInput");
+  const answerOutput = document.getElementById("answerOutput");
+  const joinChatBtn = document.getElementById("joinChatBtn");
+  const connectBtn = document.getElementById("connectBtn");
+  const messageInput = document.getElementById("messageInput");
+  const sendBtn = document.getElementById("sendBtn");
+  const messages = document.getElementById("messages");
+
+  function updateStatus(message) {
+    statusEl.textContent = message;
+  }
+
+  function initializePeerConnection() {
+    peerConnection = new RTCPeerConnection({
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+    });
+
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        updateStatus("Gathering ICE candidates...");
+      }
+    };
+  }
+
+  function setupDataChannel(channel) {
+    channel.onmessage = (event) => {
+      const messageEl = document.createElement("div");
+      messageEl.className = "p-2 rounded-lg bg-gray-100";
+      messageEl.textContent = `Other: ${event.data}`;
+      messages.appendChild(messageEl);
+      messages.scrollTop = messages.scrollHeight;
+    };
+
+    channel.onopen = () => {
+      updateStatus("Connected! You can now chat.");
+      chatSection.classList.remove("hidden");
+    };
+
+    channel.onclose = () => {
+      updateStatus("Connection closed");
+      chatSection.classList.add("hidden");
+    };
+  }
+
+  // Role selection
+  createBtn.addEventListener("click", () => {
+    creatorSection.classList.remove("hidden");
+    joinerSection.classList.add("hidden");
+    initializePeerConnection();
+  });
+
+  joinBtn.addEventListener("click", () => {
+    joinerSection.classList.remove("hidden");
+    creatorSection.classList.add("hidden");
+    initializePeerConnection();
+  });
+
+  // Creator flow
+  createOfferBtn.addEventListener("click", async () => {
+    try {
+      dataChannel = peerConnection.createDataChannel("chat");
+      setupDataChannel(dataChannel);
+
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+      offerOutput.value = JSON.stringify(offer);
+      updateStatus("Offer created! Share it with the other person.");
+    } catch (err) {
+      updateStatus("Error creating offer: " + err.message);
+    }
+  });
+
+  // Joiner flow
+  joinChatBtn.addEventListener("click", async () => {
+    try {
+      peerConnection.ondatachannel = (event) => {
+        dataChannel = event.channel;
+        setupDataChannel(dataChannel);
+      };
+
+      const offer = JSON.parse(offerInput.value);
+      await peerConnection.setRemoteDescription(offer);
+
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+      answerOutput.value = JSON.stringify(answer);
+      updateStatus("Answer created! Share it back with the creator.");
+    } catch (err) {
+      updateStatus("Error joining chat: " + err.message);
+    }
+  });
+
+  // Connect with answer
+  connectBtn.addEventListener("click", async () => {
+    try {
+      const answer = JSON.parse(answerInput.value);
+      await peerConnection.setRemoteDescription(answer);
+      updateStatus("Connected! You can now chat.");
+    } catch (err) {
+      updateStatus("Error processing answer: " + err.message);
+    }
+  });
+
+  // Chat functionality
+  sendBtn.addEventListener("click", () => {
+    const message = messageInput.value;
+    if (dataChannel?.readyState === "open" && message) {
+      dataChannel.send(message);
+      const messageEl = document.createElement("div");
+      messageEl.className = "p-2 rounded-lg bg-blue-100 text-right";
+      messageEl.textContent = `You: ${message}`;
+      messages.appendChild(messageEl);
+      messages.scrollTop = messages.scrollHeight;
+      messageInput.value = "";
+    }
+  });
+
+  messageInput.addEventListener("keypress", (event) => {
+    if (event.key === "Enter") {
+      sendBtn.click();
+    }
+  });
+</script>
