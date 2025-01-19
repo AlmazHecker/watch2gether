@@ -22,6 +22,8 @@ export class InitiatorManager {
         createOfferBtn.disabled = true;
 
         this.pc.onicecandidate = async (event) => {
+          // как только появится хоть какой то кандидат СРАЗУ ОТПРАВЛЯЕМ ОФФЕР
+          // а то заебешься ждать пока кандидаты закончатся
           offerOutput.value = JSON.stringify(this.pc.localDescription);
           offerOutput.select();
           updateStatus("Offer created! Share it with the other person.");

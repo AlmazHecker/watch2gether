@@ -7,7 +7,6 @@ const messages = document.getElementById(CHAT_SELECTORS.MESSAGE_LIST)!;
 const messageInput = document.getElementById(
   CHAT_SELECTORS.MESSAGE_INPUT
 ) as HTMLInputElement;
-const sendBtn = document.getElementById(CHAT_SELECTORS.SEND_BTN)!;
 
 export class ChatManager {
   constructor(private readonly dc: RTCDataChannel) {}

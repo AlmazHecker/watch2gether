@@ -25,7 +25,6 @@ export class JoinerManager {
           updateStatus("Answer created! Share it back with the creator.");
         };
       } catch (err) {
-        alert("bebra");
         updateStatus("Error joining chat: " + err);
       }
     });

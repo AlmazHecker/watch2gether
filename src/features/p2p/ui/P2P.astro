@@ -1,5 +1,4 @@
 ---
-import { INITIATOR_SELECTORS } from "@/features/connection/model";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@shared/ui/textarea";
@@ -21,7 +20,7 @@ import { Textarea } from "@shared/ui/textarea";
 
     <!-- Creator Section -->
     <div id="creatorSection" class="space-y-4 hidden">
-      <Button id={INITIATOR_SELECTORS.CREATE_OFFER_BTN}>Create Offer</Button>
+      <Button id="createOfferBtn">Create Offer</Button>
       <div class="space-y-2">
         <label class="text-sm text-gray-600">Your Offer (Share this):</label>
         <Textarea id="offerOutput" rows={4} readOnly />
@@ -133,10 +132,6 @@ import { Textarea } from "@shared/ui/textarea";
       const joinerManager = new JoinerManager(pc);
       joinerManager.setupListeners();
     });
-
-    // pc.onconnectionstatechange = (e) => {
-    //   alert(pc.connectionState);
-    // };
 
     videoChannel.onopen = () => {
       chatAndVideoSection.classList.remove("hidden");
