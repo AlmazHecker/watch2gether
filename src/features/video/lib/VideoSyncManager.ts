@@ -8,11 +8,10 @@ export class VideoSyncManager {
   constructor(videoPlayer: HTMLVideoElement, syncChannel: RTCDataChannel) {
     this.videoPlayer = videoPlayer;
     this.syncChannel = syncChannel;
-    this.setupVideoSync();
   }
 
-  private setupVideoSync() {
-    this.videoPlayer.src = "./fedor.mp4";
+  public setupListeners(src: string) {
+    this.videoPlayer.src = src;
 
     this.videoPlayer.addEventListener("play", () => {
       if (!this.suppressEvents) {
