@@ -26,6 +26,7 @@
     "@vitejs/plugin-basic-ssl": "^1.2.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.16",
+    "gh-pages": "^6.3.0",
     "postcss": "^8",
     "prettier": "^3.4.1",
     "tailwindcss": "^3.4.1",
