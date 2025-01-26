@@ -4,10 +4,16 @@ import tailwind from "@astrojs/tailwind";
 // import basicSsl from "@vitejs/plugin-basic-ssl";
 import AstroPWA from "@vite-pwa/astro";
 
+import vercel from "@astrojs/vercel";
+
 // https://astro.build/config
 export default defineConfig({
-  base: "/watch2gether",
-
+  // vite: {
+  //   plugins: [basicSsl()],
+  //   server: {
+  //     https: true,
+  //   },
+  // },
   integrations: [
     tailwind({
       applyBaseStyles: false,
@@ -44,11 +50,6 @@ export default defineConfig({
       },
     }),
   ],
-  //
-  // vite: {
-  //   plugins: [basicSsl()],
-  //   server: {
-  //     https: true,
-  //   },
-  // },
+
+  adapter: vercel(),
 });
