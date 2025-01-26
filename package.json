@@ -8,7 +8,6 @@
     "preview": "astro preview --host",
     "astro": "astro",
     "format": "prettier --write . --plugin=prettier-plugin-astro",
-    "deploy": "gh-pages -d dist -b deployment"
   },
   "dependencies": {
     "@astrojs/vercel": "^8.0.4",
