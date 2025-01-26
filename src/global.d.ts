@@ -1,3 +1,6 @@
+/// <reference types="vite-plugin-pwa/info" />
+/// <reference types="vite-plugin-pwa/vanillajs" />
+
 declare interface Window {
   pc: RTCPeerConnection;
 

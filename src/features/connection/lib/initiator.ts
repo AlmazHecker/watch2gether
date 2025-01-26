@@ -1,15 +1,14 @@
 import { updateStatus } from "@/features/logging/lib";
-import { INITIATOR_SELECTORS } from "../model";
 
 const createOfferBtn = document.getElementById(
-  INITIATOR_SELECTORS.CREATE_OFFER_BTN
+  "createOfferBtn"
 ) as HTMLButtonElement;
 const offerOutput = document.getElementById(
-  INITIATOR_SELECTORS.OFFER_OUTPUT
+  "offerOutput"
 ) as HTMLTextAreaElement;
-const connectBtn = document.getElementById(INITIATOR_SELECTORS.CONNECT_BTN)!;
+const connectBtn = document.getElementById("connectBtn")!;
 const answerInput = document.getElementById(
-  INITIATOR_SELECTORS.ANSWER_INPUT
+  "answerInput"
 )! as HTMLTextAreaElement;
 
 export class InitiatorManager {

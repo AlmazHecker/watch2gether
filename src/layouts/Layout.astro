@@ -1,5 +1,6 @@
 ---
 import "../assets/styles.css";
+import { pwaInfo } from "virtual:pwa-info";
 ---
 
 <!doctype html>
@@ -9,7 +10,13 @@ import "../assets/styles.css";
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <title>Astro Basics</title>
+    <title>Watch2gether</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/android-chrome-192.png" />
+    <link rel="mask-icon" href="/favicon.svg" color="#030712" />
+    <meta name="msapplication-TileColor" content="#030712" />
+    <meta name="theme-color" content="#030712" />
+    {pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} />}
   </head>
   <body class="font-mono antialiased">
     <slot />

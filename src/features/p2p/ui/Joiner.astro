@@ -1,7 +1,7 @@
 ---
-import { Button } from "@/shared/ui/button";
-import { Textarea } from "@shared/ui/textarea";
+import Button from "@/shared/ui/button.astro";
 import Chat from "./Chat.astro";
+import Textarea from "@/shared/ui/textarea.astro";
 ---
 
 <!-- Joiner Section -->
@@ -17,13 +17,13 @@ import Chat from "./Chat.astro";
         id="offerInput"
         rows={4}
         placeholder="Paste the offer you received here"
-        className="w-full"
+        class="w-full"
       />
     </div>
     <Button id="joinChatBtn">Join Chat</Button>
     <div class="space-y-2">
       <label class="text-sm text-gray-600">Your Answer (Share this):</label>
-      <Textarea id="answerOutput" rows={4} readOnly />
+      <Textarea id="answerOutput" rows={4} readonly />
     </div>
   </div>
 </div>
