@@ -6,6 +6,8 @@ import AstroPWA from "@vite-pwa/astro";
 
 // https://astro.build/config
 export default defineConfig({
+  base: "/watch2gether",
+
   integrations: [
     tailwind({
       applyBaseStyles: false,
