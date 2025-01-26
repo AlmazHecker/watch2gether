@@ -1,0 +1,68 @@
+---
+import { Button } from "@/shared/ui/button";
+import { Textarea } from "@shared/ui/textarea";
+import Chat from "./Chat.astro";
+import { Input } from "@shared/ui/input";
+---
+
+<!-- Creator Section -->
+<div id="connection-section" class="space-y-4">
+  <div class="space-y-6">
+    <div class="rounded-md">
+      <p id="status" class="text-sm text-gray-600"></p>
+    </div>
+
+    <div class="space-y-2">
+      <label class="text-sm text-gray-600">Video Source Link</label>
+      <Input id="videoSourceLink" placeholder="https://random.com" />
+    </div>
+
+    <Button id="createOfferBtn">Create Offer</Button>
+
+    <div class="space-y-2">
+      <label class="text-sm text-gray-600">Your Offer (Share this):</label>
+      <Textarea id="offerOutput" rows={4} readOnly />
+    </div>
+
+    <div class="space-y-2">
+      <label class="text-sm text-gray-600">Paste Answer Here:</label>
+      <Textarea
+        id="answerInput"
+        rows={4}
+        placeholder="Paste the answer you received here"
+      />
+      <Button id="connectBtn">Connect</Button>
+    </div>
+  </div>
+</div>
+
+<Chat />
+
+<script>
+  import { initializePeerConnection } from "../../connection/lib/initializePeerConnection";
+  import { VideoSyncManager } from "../../video/lib/VideoSyncManager";
+  import { InitiatorManager } from "../../connection/lib/initiator";
+  import { INITIATOR_SELECTORS } from "../../connection/model";
+  import { updateStatus } from "../../logging/lib";
+
+  initializePeerConnection();
+  updateStatus('First, paste video link and then click "Create Offer" button');
+
+  const videoElement = document.getElementById(
+    "sharedVideo"
+  ) as HTMLVideoElement;
+  const videoSyncManager = new VideoSyncManager(
+    videoElement,
+    window.videoChannel
+  );
+
+  const videoSourceLink = document.getElementById(
+    INITIATOR_SELECTORS.VIDEO_SOURCE_LINK
+  )! as HTMLInputElement;
+
+  window.videoChannel.addEventListener("open", () => {
+    videoSyncManager.setVideoSource(videoSourceLink.value);
+  });
+  const initiatorManager = new InitiatorManager(window.pc);
+  initiatorManager.setupListeners();
+</script>

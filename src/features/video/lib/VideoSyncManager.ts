@@ -10,8 +10,13 @@ export class VideoSyncManager {
     this.syncChannel = syncChannel;
   }
 
-  public setupListeners(src: string) {
-    this.videoPlayer.src = src;
+  public setVideoSource = (videoSource: string) => {
+    this.sendVideoCommand({ type: "video-source", src: videoSource });
+    this.setupListeners(videoSource);
+  };
+
+  public setupListeners(src?: string) {
+    if (src) this.videoPlayer.src = src;
 
     this.videoPlayer.addEventListener("play", () => {
       if (!this.suppressEvents) {
@@ -31,9 +36,9 @@ export class VideoSyncManager {
       }
     });
 
-    this.syncChannel.onmessage = async (event) => {
-      const command = JSON.parse(event.data);
-      await this.handleSyncCommand(command);
+    this.syncChannel.onmessage = async event => {
+      const message = JSON.parse(event.data);
+      await this.handleSyncCommand(message);
     };
 
     this.startPeriodicSync();
@@ -41,6 +46,9 @@ export class VideoSyncManager {
 
   private async handleSyncCommand(command: VideoCommand) {
     switch (command.type) {
+      case "video-source":
+        this.videoPlayer.src = command.src as string;
+        break;
       case "play":
         if (
           Math.abs(this.videoPlayer.currentTime - (command.currentTime || 0)) >

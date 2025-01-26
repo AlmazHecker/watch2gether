@@ -36,7 +36,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             className={cn(
               "w-[280px] justify-start text-left font-normal",
               !value && "text-muted-foreground",
-              className,
+              className
             )}
             disabled={disabled}
           >

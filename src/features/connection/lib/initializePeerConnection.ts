@@ -5,22 +5,20 @@ export const RTCConfig = {
 };
 
 export const initializePeerConnection = () => {
-  let pc = new RTCPeerConnection(RTCConfig);
-  let chatChannel = pc.createDataChannel("chat", {
+  window.pc = new RTCPeerConnection(RTCConfig);
+  window.chatChannel = window.pc.createDataChannel("chat", {
     negotiated: true,
     id: 0,
   });
 
-  const videoChannel = pc.createDataChannel("sync", {
+  window.videoChannel = window.pc.createDataChannel("sync", {
     negotiated: true,
     id: 1,
   });
 
-  pc.onicecandidate = (event) => {
+  window.pc.onicecandidate = event => {
     if (event.candidate) {
       updateStatus("Gathering ICE candidates...");
     }
   };
-
-  return { pc, chatChannel, videoChannel };
 };

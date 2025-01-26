@@ -37,7 +37,7 @@ const getBody = <T>(body: T) => {
 
 export default async function fetcher<TResponse = unknown, TBody = unknown>(
   endpoint: string | string[],
-  options: FetchOptions<TBody> = {},
+  options: FetchOptions<TBody> = {}
 ): Promise<TResponse> {
   const { method = "GET", body, headers, params } = options;
 

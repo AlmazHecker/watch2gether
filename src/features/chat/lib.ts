@@ -12,9 +12,10 @@ export class ChatManager {
   constructor(private readonly dc: RTCDataChannel) {}
 
   public setupDataChannel() {
-    this.dc.onmessage = (event) => {
+    this.dc.onmessage = event => {
       const messageEl = document.createElement("div");
-      messageEl.className = "p-2 rounded-lg bg-gray-100 text-black text-left";
+      messageEl.className =
+        "p-2 rounded-lg bg-gray-100 w-fit text-wrap max-w-md mr-auto text-black text-left";
       messageEl.textContent = `Other: ${event.data}`;
       messages.appendChild(messageEl);
       messages.scrollTop = messages.scrollHeight;
@@ -33,20 +34,26 @@ export class ChatManager {
   }
 
   public setupListeners() {
-    chatForm.addEventListener("submit", (e) => {
+    chatForm.addEventListener("submit", e => {
       e.preventDefault();
 
       const message = messageInput.value;
-      if (this.dc?.readyState === "open" && message) {
-        this.dc.send(message);
-        const messageEl = document.createElement("div");
-        messageEl.className =
-          "p-2 rounded-lg bg-blue-100 text-black text-right";
-        messageEl.textContent = `You: ${message}`;
-        messages.appendChild(messageEl);
-        messages.scrollTop = messages.scrollHeight;
-        messageInput.value = "";
+
+      if (!message) {
+        alert("Empty message!");
       }
+      if (this.dc?.readyState !== "open") {
+        alert("No Connection!");
+      }
+
+      this.dc.send(message);
+      const messageEl = document.createElement("div");
+      messageEl.className =
+        "p-2 rounded-lg bg-blue-100 w-fit text-wrap max-w-md ml-auto text-black text-right";
+      messageEl.textContent = `You: ${message}`;
+      messages.appendChild(messageEl);
+      messages.scrollTop = messages.scrollHeight;
+      messageInput.value = "";
     });
   }
 }

@@ -19,7 +19,7 @@ export class JoinerManager {
         await this.pc.setRemoteDescription(offer);
 
         await this.pc.setLocalDescription(await this.pc.createAnswer());
-        this.pc.onicecandidate = async ({ candidate }) => {
+        this.pc.onicecandidate = async () => {
           answerOutput.value = JSON.stringify(this.pc?.localDescription);
           answerOutput.select();
           updateStatus("Answer created! Share it back with the creator.");

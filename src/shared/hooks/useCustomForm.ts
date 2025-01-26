@@ -24,7 +24,7 @@ export function useCustomForm<T extends FieldValues>({
 
   const onSubmit = (
     data: T,
-    func: (data: T, form: UseFormReturn<T>) => void,
+    func: (data: T, form: UseFormReturn<T>) => void
   ) => {
     return func(data, form);
   };
@@ -36,6 +36,6 @@ export function useCustomForm<T extends FieldValues>({
     isValid: form.formState.isValid,
     isSubmitting: form.formState.isSubmitting,
     handleSubmit: (func: (data: T, form: UseFormReturn<T>) => void) =>
-      form.handleSubmit((data) => onSubmit(data, func)),
+      form.handleSubmit(data => onSubmit(data, func)),
   };
 }

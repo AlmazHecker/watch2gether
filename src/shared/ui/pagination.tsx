@@ -146,14 +146,14 @@ const Pageable: React.FC<PaginationProps> = ({
           <PaginationLink
             href="#"
             isActive={currentPage === i}
-            onClick={(e) => {
+            onClick={e => {
               e.preventDefault();
               onChange(i);
             }}
           >
             {i}
           </PaginationLink>
-        </PaginationItem>,
+        </PaginationItem>
       );
     }
 
@@ -167,7 +167,7 @@ const Pageable: React.FC<PaginationProps> = ({
         <PaginationItem>
           <PaginationPrevious
             href="#"
-            onClick={(e) => {
+            onClick={e => {
               e.preventDefault();
               if (currentPage > 1) onChange(currentPage - 1);
             }}
@@ -180,7 +180,7 @@ const Pageable: React.FC<PaginationProps> = ({
             <PaginationItem>
               <PaginationLink
                 href="#"
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                   onChange(1);
                 }}
@@ -200,7 +200,7 @@ const Pageable: React.FC<PaginationProps> = ({
             <PaginationItem>
               <PaginationLink
                 href="#"
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                   onChange(totalPage);
                 }}
@@ -215,7 +215,7 @@ const Pageable: React.FC<PaginationProps> = ({
         <PaginationItem>
           <PaginationNext
             href="#"
-            onClick={(e) => {
+            onClick={e => {
               e.preventDefault();
               if (currentPage < totalPage) onChange(currentPage + 1);
             }}

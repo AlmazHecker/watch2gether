@@ -1,0 +1,42 @@
+---
+import { Input } from "@/shared/ui/input";
+import { Button } from "@/shared/ui/button";
+---
+
+<div id="chatAndVideoSection" class="hidden space-y-4">
+  <!-- Video Player -->
+  <div class="space-y-2">
+    <video id="sharedVideo" class="w-full rounded-lg" controls preload="auto"
+    ></video>
+  </div>
+
+  <!-- Chat Section -->
+  <form id="chatSection" class="space-y-4">
+    <div class="flex gap-2">
+      <Input id="messageInput" type="text" placeholder="Type your message..." />
+      <Button type="submit" id="sendBtn">Send</Button>
+    </div>
+    <div class="h-64 overflow-y-auto rounded-lg border p-4">
+      <div id="message-list" class="space-y-2"></div>
+    </div>
+  </form>
+</div>
+
+<script>
+  import { ChatManager } from "../../chat/lib";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const connectionSection = document.getElementById("connection-section")!;
+
+    const chatManager = new ChatManager(window.chatChannel);
+    chatManager.setupDataChannel();
+    chatManager.setupListeners();
+
+    const chatAndVideoSection = document.getElementById("chatAndVideoSection")!;
+
+    window.chatChannel.addEventListener("open", () => {
+      chatAndVideoSection.classList.remove("hidden");
+      connectionSection.classList.add("hidden");
+    });
+  });
+</script>

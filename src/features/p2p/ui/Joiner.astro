@@ -1,0 +1,50 @@
+---
+import { Button } from "@/shared/ui/button";
+import { Textarea } from "@shared/ui/textarea";
+import Chat from "./Chat.astro";
+---
+
+<!-- Joiner Section -->
+<div id="connection-section" class='space-y-4"'>
+  <div class="space-y-6">
+    <div class="rounded-md">
+      <p id="status" class="text-sm text-gray-600"></p>
+    </div>
+
+    <div class="space-y-2">
+      <label class="text-sm text-gray-600">Paste Offer Here:</label>
+      <Textarea
+        id="offerInput"
+        rows={4}
+        placeholder="Paste the offer you received here"
+        className="w-full"
+      />
+    </div>
+    <Button id="joinChatBtn">Join Chat</Button>
+    <div class="space-y-2">
+      <label class="text-sm text-gray-600">Your Answer (Share this):</label>
+      <Textarea id="answerOutput" rows={4} readOnly />
+    </div>
+  </div>
+</div>
+
+<Chat />
+
+<script>
+  import { initializePeerConnection } from "../../connection/lib/initializePeerConnection";
+  import { VideoSyncManager } from "../../video/lib/VideoSyncManager";
+  import { JoinerManager } from "../../connection/lib/joiner";
+
+  initializePeerConnection();
+  const videoElement = document.getElementById(
+    "sharedVideo"
+  ) as HTMLVideoElement;
+  const videoSyncManager = new VideoSyncManager(
+    videoElement,
+    window.videoChannel
+  );
+  videoSyncManager.setupListeners();
+
+  const joinerManager = new JoinerManager(window.pc);
+  joinerManager.setupListeners();
+</script>
