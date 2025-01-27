@@ -16,6 +16,11 @@ export const initializePeerConnection = () => {
     id: 1,
   });
 
+  window.liveStreamChannel = window.pc.createDataChannel("live-stream", {
+    negotiated: true,
+    id: 2,
+  });
+
   window.pc.onicecandidate = event => {
     if (event.candidate) {
       updateStatus("Gathering ICE candidates...");

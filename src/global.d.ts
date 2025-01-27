@@ -6,6 +6,7 @@ declare interface Window {
 
   chatChannel: RTCDataChannel;
   videoChannel: RTCDataChannel;
+  liveStreamChannel: RTCDataChannel;
 }
 
 declare global {
@@ -13,4 +14,5 @@ declare global {
 
   const chatChannel: RTCDataChannel;
   const videoChannel: RTCDataChannel;
+  const liveStreamChannel: RTCDataChannel;
 }

@@ -6,8 +6,25 @@ import Button from "@/shared/ui/button.astro";
 <div id="chatAndVideoSection" class="hidden space-y-4">
   <!-- Video Player -->
   <div class="space-y-2">
-    <video id="sharedVideo" class="w-full rounded-lg" controls preload="auto"
-    ></video>
+    <video
+      id="sharedVideo"
+      class="hidden w-full rounded-lg"
+      controls
+      preload="auto"></video>
+  </div>
+
+  <div class="mx-auto flex h-[256px] w-[520px] space-x-2">
+    <div class="size-[256px]">
+      <video id="remoteVideo" class="size-full rounded-lg"></video>
+    </div>
+    <div class="size-[256px]">
+      <video id="localVideo" class="size-full rounded-lg"></video>
+    </div>
+  </div>
+
+  <div class="space-y-2">
+    <Button id="start-live-stream">Start live-stream</Button>
+    <Button id="stop-live-stream">Stop live-stream</Button>
   </div>
 
   <!-- Chat Section -->
@@ -24,6 +41,11 @@ import Button from "@/shared/ui/button.astro";
 
 <script>
   import { ChatManager } from "../../chat/lib";
+  import { LiveStreamManager } from "../../live-stream/lib/LiveStreamManager";
+
+  const videoElement = document.getElementById(
+    "sharedVideo"
+  ) as HTMLVideoElement;
 
   document.addEventListener("DOMContentLoaded", () => {
     const connectionSection = document.getElementById("connection-section")!;
@@ -34,9 +56,39 @@ import Button from "@/shared/ui/button.astro";
 
     const chatAndVideoSection = document.getElementById("chatAndVideoSection")!;
 
+    // TODO There should be option to share video and it will be displayed
+    // videoElement.classList.remove("hidden");
+
     window.chatChannel.addEventListener("open", () => {
       chatAndVideoSection.classList.remove("hidden");
       connectionSection.classList.add("hidden");
+    });
+
+    const remoteVideo = document.getElementById(
+      "remoteVideo"
+    ) as HTMLVideoElement;
+    const localVideo = document.getElementById(
+      "localVideo"
+    ) as HTMLVideoElement;
+
+    const liveStreamManager = new LiveStreamManager(
+      window.liveStreamChannel,
+      window.pc,
+      remoteVideo,
+      localVideo
+    );
+
+    liveStreamManager.setupDataChannel();
+
+    const startLiveStream = document.getElementById("start-live-stream")!;
+    const stopLiveStream = document.getElementById("stop-live-stream")!;
+
+    startLiveStream.addEventListener("click", () => {
+      liveStreamManager.startStream();
+    });
+
+    stopLiveStream.addEventListener("click", () => {
+      liveStreamManager.stopStream();
     });
   });
 </script>
