@@ -50,6 +50,8 @@ export const POST: APIRoute = async ({ request }) => {
 
     const sessionData = signalingData.get(sessionId)!;
 
+    console.log(sessionData, "Datchk");
+
     // Handle different types of messages
     switch (type) {
       case "offer":
@@ -83,8 +85,6 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Update session data
     signalingData.set(sessionId, sessionData);
-
-    console.log(signalingData);
 
     // Return success
     return new Response(
