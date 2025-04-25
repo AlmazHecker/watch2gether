@@ -20,11 +20,13 @@ export class InitiatorManager {
         await this.pc.setLocalDescription(await this.pc.createOffer());
         createOfferBtn.disabled = true;
 
-        this.pc.onicecandidate = async () => {
-          // как только появится хоть какой то кандидат СРАЗУ ОТПРАВЛЯЕМ ОФФЕР
-          offerOutput.value = JSON.stringify(this.pc.localDescription);
-          offerOutput.select();
-          updateStatus("Offer created! Share it with the other person.");
+        this.pc.onicecandidate = async event => {
+          if (!event.candidate) {
+            // Now we have ALL candidates
+            offerOutput.value = JSON.stringify(this.pc.localDescription);
+            offerOutput.select();
+            updateStatus("Offer created! Share it with the other person.");
+          }
         };
       } catch (err) {
         updateStatus("Error creating offer: " + err);

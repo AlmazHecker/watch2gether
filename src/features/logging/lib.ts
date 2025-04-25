@@ -1,6 +1,4 @@
-import { LOG_SELECTORS } from "./model";
-
-const statusEl = document.getElementById(LOG_SELECTORS.container)!;
+const statusEl = document.getElementById("status")!;
 
 export function updateStatus(message: string) {
   statusEl.textContent = message;
