@@ -54,10 +54,7 @@ export const POST: APIRoute = async ({ request }) => {
     switch (type) {
       case "offer":
         sessionData.offer = sdp;
-        console.log(
-          `Stored offer for session ${sessionId}:`,
-          JSON.stringify(sessionData, null, 2)
-        );
+        console.log(`Stored offer for session ${sessionId}`);
         break;
 
       case "answer":
@@ -80,6 +77,8 @@ export const POST: APIRoute = async ({ request }) => {
           headers: { "Content-Type": "application/json" },
         });
     }
+
+    console.log(sessionData, "SESSION Data");
 
     // Update session data
     signalingData.set(sessionId, sessionData);
