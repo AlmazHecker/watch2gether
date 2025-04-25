@@ -64,9 +64,12 @@ export const POST: APIRoute = async ({ request }) => {
 
       case "candidate":
         if (candidate) {
-          sessionData.candidates.push(candidate);
+          signalingData.set(sessionId, {
+            ...sessionData,
+            candidates: [...sessionData.candidates, candidate],
+          });
           console.log(
-            `Added ICE candidate for session ${sessionId}, total: ${sessionData.candidates.length}`
+            `Added ICE candidate for session ${sessionId}, total: ${sessionData.candidates.length + 1}`
           );
         }
         break;
