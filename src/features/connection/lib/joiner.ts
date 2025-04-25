@@ -140,14 +140,13 @@ export class JoinerManager {
             const candidateStr = JSON.stringify(candidate);
             if (this.processedCandidates.has(candidateStr)) continue;
 
-            // Mark as processed
-            this.processedCandidates.add(candidateStr);
-
             // Add candidate if it's valid
             if (candidate && candidate.candidate) {
               try {
                 console.log("Adding remote ICE candidate:", candidate);
                 await this.pc.addIceCandidate(new RTCIceCandidate(candidate));
+                // Mark as processed
+                this.processedCandidates.add(candidateStr);
               } catch (err) {
                 console.error("Failed to add ICE candidate:", err);
               }
