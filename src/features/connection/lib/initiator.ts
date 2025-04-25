@@ -105,6 +105,8 @@ export class InitiatorManager {
           updateStatus("Received answer, connection establishing...");
         }
 
+        if (!this.pc.remoteDescription) return;
+
         // Process any ICE candidates
         if (data.candidates && Array.isArray(data.candidates)) {
           for (const candidate of data.candidates) {
