@@ -78,10 +78,10 @@ export const POST: APIRoute = async ({ request }) => {
         });
     }
 
-    console.log(sessionData, "SESSION Data");
-
     // Update session data
     signalingData.set(sessionId, sessionData);
+
+    console.log(signalingData);
 
     // Return success
     return new Response(
