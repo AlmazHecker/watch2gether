@@ -59,6 +59,10 @@ import Button from "@/shared/ui/button.astro";
     // TODO There should be option to share video and it will be displayed
     // videoElement.classList.remove("hidden");
 
+    window.pc.addEventListener("connectionstatechange", e => {
+      console.log(e);
+    });
+
     window.chatChannel.addEventListener("open", () => {
       chatAndVideoSection.classList.remove("hidden");
       connectionSection.classList.add("hidden");

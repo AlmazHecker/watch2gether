@@ -1,15 +1,9 @@
 import { updateStatus } from "@/features/logging/lib";
 
-const joinChatBtn = document.getElementById("joinChatBtn")!;
+const joinChatBtn = document.getElementById("joinChatBtn") as HTMLButtonElement;
 const sessionIdInput = document.getElementById(
   "sessionIdInput"
 )! as HTMLInputElement;
-const offerInput = document.getElementById(
-  "offerInput"
-)! as HTMLTextAreaElement;
-const answerOutput = document.getElementById(
-  "answerOutput"
-) as HTMLTextAreaElement;
 
 export class JoinerManager {
   private sessionId: string | null = null;
@@ -24,22 +18,11 @@ export class JoinerManager {
       try {
         let offerData;
 
-        // // Try to parse the offer input first
-        // try {
-        this.sessionId = prompt("");
-        //   // If the offer contains a sessionId, use it
-        //   if (offerData.sessionId) {
-        //     this.sessionId = offerData.sessionId;
-        //     sessionIdInput.value = this.sessionId;
-        //   }
-        // } catch (err) {
-        //   console.error("Error parsing offer input:", err);
-        // }
+        this.sessionId = sessionIdInput.value.trim();
 
-        // // If no sessionId from offer, use the input field
-        // if (!this.sessionId) {
-        //   this.sessionId = sessionIdInput.value.trim();
-        // }
+        if (!this.sessionId) {
+          alert("No session id provided :(");
+        }
 
         if (!this.sessionId) {
           updateStatus("Please enter a valid session ID");
@@ -122,12 +105,6 @@ export class JoinerManager {
           body: JSON.stringify(body),
         });
 
-        // Display the answer
-        answerOutput.value = JSON.stringify({
-          sessionId: this.sessionId,
-          answer: this.pc.localDescription,
-        });
-        answerOutput.select();
         updateStatus("Answer created! Connection establishing...");
 
         // Start polling for ICE candidates

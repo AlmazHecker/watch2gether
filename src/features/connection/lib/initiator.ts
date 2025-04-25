@@ -3,13 +3,6 @@ import { updateStatus } from "@/features/logging/lib";
 const createOfferBtn = document.getElementById(
   "createOfferBtn"
 ) as HTMLButtonElement;
-const offerOutput = document.getElementById(
-  "offerOutput"
-) as HTMLTextAreaElement;
-const connectBtn = document.getElementById("connectBtn")!;
-const answerInput = document.getElementById(
-  "answerInput"
-)! as HTMLTextAreaElement;
 
 export class InitiatorManager {
   private sessionId: string | null = null;
@@ -31,7 +24,7 @@ export class InitiatorManager {
 
           if (event.candidate) {
             // Send each candidate as it's generated
-            const candidateJson = JSON.stringify(event.candidate);
+            // const candidateJson = JSON.stringify(event.candidate);
             console.log("Sending ICE candidate:", event.candidate);
 
             const body = {
@@ -72,36 +65,16 @@ export class InitiatorManager {
           body: JSON.stringify(body),
         });
 
-        // Show the offer and session ID for easy sharing
-        offerOutput.value = JSON.stringify({
-          sessionId: this.sessionId,
-          offer: this.pc.localDescription,
-        });
-        offerOutput.select();
         updateStatus(
           `Offer created! Share the offer and session ID: ${this.sessionId}`
         );
 
+        navigator.clipboard.writeText(this.sessionId);
+        alert("Session copied to clipboard!");
         // Start polling for the answer and remote ICE candidates
         this.startPolling();
       } catch (err) {
         updateStatus("Error creating offer: " + err);
-      }
-    });
-
-    // Connect with answer
-    connectBtn.addEventListener("click", async () => {
-      try {
-        const answerData = JSON.parse(answerInput.value);
-        if (answerData.sessionId) {
-          this.sessionId = answerData.sessionId;
-        }
-        await this.pc.setRemoteDescription(
-          new RTCSessionDescription(answerData.answer || answerData)
-        );
-        updateStatus("Connected with answer! Establishing connection...");
-      } catch (err) {
-        updateStatus("Error processing answer: " + err);
       }
     });
   }

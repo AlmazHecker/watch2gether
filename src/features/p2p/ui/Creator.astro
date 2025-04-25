@@ -5,6 +5,8 @@ import Textarea from "@/shared/ui/textarea.astro";
 import Button from "@/shared/ui/button.astro";
 ---
 
+<Chat />
+
 <!-- Creator Section -->
 <div id="connection-section" class="space-y-4">
   <div class="space-y-6">
@@ -18,50 +20,35 @@ import Button from "@/shared/ui/button.astro";
     </div>
 
     <Button id="createOfferBtn">Create Offer</Button>
-
-    <div class="space-y-2">
-      <label class="text-sm text-gray-600">Your Offer (Share this):</label>
-      <Textarea id="offerOutput" rows={4} readonly />
-    </div>
-
-    <div class="space-y-2">
-      <label class="text-sm text-gray-600">Paste Answer Here:</label>
-      <Textarea
-        id="answerInput"
-        rows={4}
-        placeholder="Paste the answer you received here"
-      />
-      <Button id="connectBtn">Connect</Button>
-    </div>
   </div>
+
+  <script>
+    import { initializePeerConnection } from "../../connection/lib/initializePeerConnection";
+    import { VideoSyncManager } from "../../video/lib/VideoSyncManager";
+    import { InitiatorManager } from "../../connection/lib/initiator";
+    import { updateStatus } from "../../logging/lib";
+
+    initializePeerConnection();
+    updateStatus(
+      'First, paste video link and then click "Create Offer" button'
+    );
+
+    const videoElement = document.getElementById(
+      "sharedVideo"
+    ) as HTMLVideoElement;
+    const videoSyncManager = new VideoSyncManager(
+      videoElement,
+      window.videoChannel
+    );
+
+    const videoSourceLink = document.getElementById(
+      "videoSourceLink"
+    )! as HTMLInputElement;
+
+    window.videoChannel.addEventListener("open", () => {
+      videoSyncManager.setVideoSource(videoSourceLink.value);
+    });
+    const initiatorManager = new InitiatorManager(window.pc);
+    initiatorManager.setupListeners();
+  </script>
 </div>
-
-<Chat />
-
-<script>
-  import { initializePeerConnection } from "../../connection/lib/initializePeerConnection";
-  import { VideoSyncManager } from "../../video/lib/VideoSyncManager";
-  import { InitiatorManager } from "../../connection/lib/initiator";
-  import { updateStatus } from "../../logging/lib";
-
-  initializePeerConnection();
-  updateStatus('First, paste video link and then click "Create Offer" button');
-
-  const videoElement = document.getElementById(
-    "sharedVideo"
-  ) as HTMLVideoElement;
-  const videoSyncManager = new VideoSyncManager(
-    videoElement,
-    window.videoChannel
-  );
-
-  const videoSourceLink = document.getElementById(
-    "videoSourceLink"
-  )! as HTMLInputElement;
-
-  window.videoChannel.addEventListener("open", () => {
-    videoSyncManager.setVideoSource(videoSourceLink.value);
-  });
-  const initiatorManager = new InitiatorManager(window.pc);
-  initiatorManager.setupListeners();
-</script>

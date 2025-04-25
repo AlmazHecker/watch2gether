@@ -1,8 +1,10 @@
 ---
 import Button from "@/shared/ui/button.astro";
 import Chat from "./Chat.astro";
-import Textarea from "@/shared/ui/textarea.astro";
+import Input from "@/shared/ui/input.astro";
 ---
+
+<Chat />
 
 <!-- Joiner Section -->
 <div id="connection-section" class='space-y-4"'>
@@ -13,38 +15,27 @@ import Textarea from "@/shared/ui/textarea.astro";
 
     <div class="space-y-2">
       <label class="text-sm text-gray-600">Paste Offer Here:</label>
-      <Textarea
-        id="offerInput"
-        rows={4}
-        placeholder="Paste the offer you received here"
-        class="w-full"
-      />
+      <Input id="sessionIdInput" placeholder="Paste the id you received" />
     </div>
     <Button id="joinChatBtn">Join Chat</Button>
-    <div class="space-y-2">
-      <label class="text-sm text-gray-600">Your Answer (Share this):</label>
-      <Textarea id="answerOutput" rows={4} readonly />
-    </div>
   </div>
+
+  <script>
+    import { initializePeerConnection } from "../../connection/lib/initializePeerConnection";
+    import { VideoSyncManager } from "../../video/lib/VideoSyncManager";
+    import { JoinerManager } from "../../connection/lib/joiner";
+
+    initializePeerConnection();
+    const videoElement = document.getElementById(
+      "sharedVideo"
+    ) as HTMLVideoElement;
+    const videoSyncManager = new VideoSyncManager(
+      videoElement,
+      window.videoChannel
+    );
+    videoSyncManager.setupListeners();
+
+    const joinerManager = new JoinerManager(window.pc);
+    joinerManager.setupListeners();
+  </script>
 </div>
-
-<Chat />
-
-<script>
-  import { initializePeerConnection } from "../../connection/lib/initializePeerConnection";
-  import { VideoSyncManager } from "../../video/lib/VideoSyncManager";
-  import { JoinerManager } from "../../connection/lib/joiner";
-
-  initializePeerConnection();
-  const videoElement = document.getElementById(
-    "sharedVideo"
-  ) as HTMLVideoElement;
-  const videoSyncManager = new VideoSyncManager(
-    videoElement,
-    window.videoChannel
-  );
-  videoSyncManager.setupListeners();
-
-  const joinerManager = new JoinerManager(window.pc);
-  joinerManager.setupListeners();
-</script>
