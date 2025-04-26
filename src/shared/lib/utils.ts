@@ -8,3 +8,8 @@ export function cn(...inputs: ClassValue[]) {
 export const isNotNumberLike = (num: string | number) => {
   return Number.isNaN(+num); // checks, whether num can be converted to number
 };
+
+export const isYoutubeUrl = (videoUrl: string) => {
+  const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//;
+  return youtubeRegex.test(videoUrl);
+};

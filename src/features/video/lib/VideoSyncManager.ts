@@ -1,11 +1,11 @@
-import type { VideoCommand } from "../types/types";
+import type { VideoCommand, VideoPlayer } from "../types/types";
 
 export class VideoSyncManager {
-  private videoPlayer: HTMLVideoElement;
+  private videoPlayer: VideoPlayer;
   private syncChannel: RTCDataChannel;
   private suppressEvents: boolean = false;
 
-  constructor(videoPlayer: HTMLVideoElement, syncChannel: RTCDataChannel) {
+  constructor(videoPlayer: VideoPlayer, syncChannel: RTCDataChannel) {
     this.videoPlayer = videoPlayer;
     this.syncChannel = syncChannel;
   }
@@ -16,23 +16,19 @@ export class VideoSyncManager {
   };
 
   public setupListeners(src?: string) {
-    if (src) this.videoPlayer.src = src;
+    if (src) this.videoPlayer.setSource(src);
 
-    this.videoPlayer.addEventListener("play", () => {
+    this.videoPlayer.addEventListener("play", async () => {
       if (!this.suppressEvents) {
-        this.sendVideoCommand({
-          type: "play",
-          currentTime: this.videoPlayer.currentTime,
-        });
+        const currentTime = await this.videoPlayer.getCurrentTime();
+        this.sendVideoCommand({ type: "play", currentTime: currentTime });
       }
     });
 
-    this.videoPlayer.addEventListener("pause", () => {
+    this.videoPlayer.addEventListener("pause", async () => {
       if (!this.suppressEvents) {
-        this.sendVideoCommand({
-          type: "pause",
-          currentTime: this.videoPlayer.currentTime,
-        });
+        const currentTime = await this.videoPlayer.getCurrentTime();
+        this.sendVideoCommand({ type: "pause", currentTime: currentTime });
       }
     });
 
@@ -47,25 +43,23 @@ export class VideoSyncManager {
   private async handleSyncCommand(command: VideoCommand) {
     switch (command.type) {
       case "video-source":
-        this.videoPlayer.src = command.src as string;
+        this.videoPlayer.setSource(command.src as string);
         break;
-      case "play":
-        if (
-          Math.abs(this.videoPlayer.currentTime - (command.currentTime || 0)) >
-          0.5
-        ) {
-          this.videoPlayer.currentTime = command.currentTime || 0;
+      case "play": {
+        const currentTime = await this.videoPlayer.getCurrentTime();
+        if (Math.abs(currentTime - (command.currentTime || 0)) > 0.5) {
+          await this.videoPlayer.setCurrentTime(command.currentTime || 0);
         }
         this.suppressEvents = true;
         await this.videoPlayer.play();
         this.suppressEvents = false;
         break;
-
+      }
       case "pause":
         this.suppressEvents = true;
         this.videoPlayer.pause();
-        if (command.currentTime) {
-          this.videoPlayer.currentTime = command.currentTime;
+        if (command.currentTime !== undefined) {
+          await this.videoPlayer.setCurrentTime(command.currentTime);
         }
         this.suppressEvents = false;
         break;
@@ -73,21 +67,22 @@ export class VideoSyncManager {
       case "seek":
         if (command.currentTime !== undefined) {
           this.suppressEvents = true;
-          this.videoPlayer.currentTime = command.currentTime;
+          await this.videoPlayer.setCurrentTime(command.currentTime);
           this.suppressEvents = false;
         }
         break;
 
-      case "sync-request":
+      case "sync-request": {
+        const currentTime = await this.videoPlayer.getCurrentTime();
         this.sendVideoCommand({
           type: "sync-response",
-          currentTime: this.videoPlayer.currentTime,
+          currentTime: currentTime,
           timestamp: Date.now(),
         });
         break;
-
+      }
       case "sync-response":
-        this.handleSyncResponse(command);
+        await this.handleSyncResponse(command);
         break;
     }
   }
@@ -98,20 +93,21 @@ export class VideoSyncManager {
     }
   }
 
-  private handleSyncResponse(command: VideoCommand) {
+  private async handleSyncResponse(command: VideoCommand) {
     if (command.currentTime === undefined || command.timestamp === undefined)
       return;
 
     const latency = (Date.now() - command.timestamp) / 2;
     const estimatedCurrentTime = command.currentTime + latency / 1000;
+    const currentTime = await this.videoPlayer.getCurrentTime();
 
-    if (Math.abs(this.videoPlayer.currentTime - estimatedCurrentTime) > 0.5) {
-      this.videoPlayer.currentTime = estimatedCurrentTime;
+    if (Math.abs(currentTime - estimatedCurrentTime) > 0.5) {
+      await this.videoPlayer.setCurrentTime(estimatedCurrentTime);
     }
   }
 
   private startPeriodicSync() {
-    setInterval(() => {
+    setInterval(async () => {
       if (this.syncChannel.readyState === "open") {
         this.sendVideoCommand({ type: "sync-request", timestamp: Date.now() });
       }

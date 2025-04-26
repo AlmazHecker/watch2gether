@@ -1,14 +1,7 @@
+import type { Signal } from "@/features/connection/types/types";
 import type { APIRoute } from "astro";
 
-const signalingData = new Map<
-  string,
-  {
-    createdAt: number;
-    offer?: RTCSessionDescriptionInit;
-    answer?: RTCSessionDescriptionInit;
-    candidates: RTCIceCandidateInit[];
-  }
->();
+const signalingData = new Map<string, Signal>();
 
 // Clean up типа
 const EXPIRATION_TIME = 30 * 60 * 1000; // 30 minutes

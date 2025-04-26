@@ -11,16 +11,20 @@ export const RTCConfig = {
 };
 export const initializePeerConnection = () => {
   window.pc = new RTCPeerConnection(RTCConfig);
+
+  // chat channel(text-only)
   window.chatChannel = window.pc.createDataChannel("chat", {
     negotiated: true,
     id: 0,
   });
 
+  // video channel(video events(stop, pause, seek, etc))
   window.videoChannel = window.pc.createDataChannel("sync", {
     negotiated: true,
     id: 1,
   });
 
+  // live channel(video, voice)
   window.liveStreamChannel = window.pc.createDataChannel("live-stream", {
     negotiated: true,
     id: 2,

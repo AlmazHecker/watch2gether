@@ -1,13 +1,11 @@
 ---
 import Chat from "./Chat.astro";
 import Input from "@/shared/ui/input.astro";
-import Textarea from "@/shared/ui/textarea.astro";
 import Button from "@/shared/ui/button.astro";
 ---
 
 <Chat />
 
-<!-- Creator Section -->
 <div id="connection-section" class="space-y-4">
   <div class="space-y-6">
     <div class="rounded-md">
@@ -16,29 +14,23 @@ import Button from "@/shared/ui/button.astro";
 
     <div class="space-y-2">
       <label class="text-sm text-gray-600">Video Source Link(Optional)</label>
-      <Input id="videoSourceLink" placeholder="https://random.com" />
+      <Input
+        id="videoSourceLink"
+        placeholder="Paste youtube or any video link"
+      />
     </div>
 
-    <Button id="createOfferBtn">Create Offer</Button>
+    <Button id="createOfferBtn">Create Session</Button>
   </div>
 
   <script>
     import { initializePeerConnection } from "../../connection/lib/initializePeerConnection";
-    import { VideoSyncManager } from "../../video/lib/VideoSyncManager";
     import { InitiatorManager } from "../../connection/lib/initiator";
     import { updateStatus } from "../../logging/lib";
-
+    import { setupVideoPlayer } from "@features/video/lib/setupVideoPlayer";
     initializePeerConnection();
     updateStatus(
-      'First, paste video link and then click "Create Offer" button'
-    );
-
-    const videoElement = document.getElementById(
-      "sharedVideo"
-    ) as HTMLVideoElement;
-    const videoSyncManager = new VideoSyncManager(
-      videoElement,
-      window.videoChannel
+      'First, paste video link and then click "Create Session" button'
     );
 
     const videoSourceLink = document.getElementById(
@@ -46,8 +38,9 @@ import Button from "@/shared/ui/button.astro";
     )! as HTMLInputElement;
 
     window.videoChannel.addEventListener("open", () => {
-      videoSyncManager.setVideoSource(videoSourceLink.value);
+      setupVideoPlayer(videoSourceLink.value);
     });
+
     const initiatorManager = new InitiatorManager(window.pc);
     initiatorManager.setupListeners();
   </script>

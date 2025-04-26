@@ -11,7 +11,9 @@
       "@pages/*": ["./views/*"],
       "@entities/*": ["./entities/*"],
       "@shared/*": ["./shared/*"],
+      "@features/*": ["./features/*"],
       "@ui/*": ["./shared/ui/*"]
-    }
+    },
+    "types": ["youtube"]
   }
 }

@@ -5,12 +5,16 @@ import Button from "@/shared/ui/button.astro";
 
 <div id="chatAndVideoSection" class="hidden space-y-4">
   <!-- Video Player -->
-  <div class="space-y-2">
+
+  <div id="videoContainer" class="space-y-2">
+    <!-- HTML5 Video Player -->
     <video
       id="sharedVideo"
       class="hidden w-full rounded-lg"
       controls
       preload="auto"></video>
+    <!-- Youtube API Video Player -->
+    <div id="youtube-player" class="hidden h-64 w-full rounded-lg"></div>
   </div>
 
   <div class="mx-auto flex h-[256px] w-[520px] space-x-2">
@@ -43,10 +47,6 @@ import Button from "@/shared/ui/button.astro";
   import { ChatManager } from "../../chat/lib";
   import { LiveStreamManager } from "../../live-stream/lib/LiveStreamManager";
 
-  const videoElement = document.getElementById(
-    "sharedVideo"
-  ) as HTMLVideoElement;
-
   document.addEventListener("DOMContentLoaded", () => {
     const connectionSection = document.getElementById("connection-section")!;
 
@@ -55,13 +55,6 @@ import Button from "@/shared/ui/button.astro";
     chatManager.setupListeners();
 
     const chatAndVideoSection = document.getElementById("chatAndVideoSection")!;
-
-    // TODO There should be option to share video and it will be displayed
-    // videoElement.classList.remove("hidden");
-
-    window.pc.addEventListener("connectionstatechange", e => {
-      console.log(e);
-    });
 
     window.chatChannel.addEventListener("open", () => {
       chatAndVideoSection.classList.remove("hidden");
@@ -87,12 +80,11 @@ import Button from "@/shared/ui/button.astro";
     const startLiveStream = document.getElementById("start-live-stream")!;
     const stopLiveStream = document.getElementById("stop-live-stream")!;
 
-    startLiveStream.addEventListener("click", () => {
-      liveStreamManager.startStream();
-    });
-
-    stopLiveStream.addEventListener("click", () => {
-      liveStreamManager.stopStream();
-    });
+    startLiveStream.addEventListener("click", () =>
+      liveStreamManager.startStream()
+    );
+    stopLiveStream.addEventListener("click", () =>
+      liveStreamManager.stopStream()
+    );
   });
 </script>

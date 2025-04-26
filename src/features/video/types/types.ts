@@ -10,3 +10,13 @@ export interface VideoCommand {
   currentTime?: number;
   src?: string;
 }
+
+export interface VideoPlayer {
+  play(): Promise<void>;
+  pause(): void;
+  setSource(src: string): void;
+  getCurrentTime(): Promise<number>;
+  setCurrentTime(time: number): Promise<void>;
+  addEventListener(event: string, listener: () => void): void;
+  removeEventListener(event: string, listener: () => void): void;
+}
