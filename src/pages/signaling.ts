@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro";
 
-// Use a Map to store signaling data with session expiration
 const signalingData = new Map<
   string,
   {
@@ -11,7 +10,7 @@ const signalingData = new Map<
   }
 >();
 
-// Clean up old sessions periodically
+// Clean up типа
 const EXPIRATION_TIME = 30 * 60 * 1000; // 30 minutes
 setInterval(
   () => {
@@ -23,8 +22,8 @@ setInterval(
       }
     }
   },
-  5 * 60 * 1000
-); // Check every 5 minutes
+  5 * 60 * 1000 // 5 minutes check
+);
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -40,58 +39,34 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // Initialize session data if it doesn't exist
-    if (!signalingData.has(sessionId)) {
-      signalingData.set(sessionId, {
-        createdAt: Date.now(),
-        candidates: [],
+    // Always clone current data safely
+    const currentSession = signalingData.get(sessionId) || {
+      createdAt: Date.now(),
+      candidates: [],
+    };
+
+    if (type === "offer") {
+      currentSession.offer = sdp;
+      console.log(`Stored offer for session ${sessionId}`);
+    } else if (type === "answer") {
+      currentSession.answer = sdp;
+      console.log(`Stored answer for session ${sessionId}`);
+    } else if (type === "candidate" && candidate) {
+      currentSession.candidates.push(candidate);
+      console.log(
+        `Added ICE candidate for session ${sessionId}, total: ${currentSession.candidates.length}`
+      );
+    } else {
+      return new Response(JSON.stringify({ error: "Invalid message type" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
       });
     }
 
-    const sessionData = signalingData.get(sessionId)!;
+    signalingData.set(sessionId, currentSession);
 
-    console.log(sessionData, "Datchk");
-
-    // Handle different types of messages
-    switch (type) {
-      case "offer":
-        sessionData.offer = sdp;
-        console.log(`Stored offer for session ${sessionId}`);
-        break;
-
-      case "answer":
-        sessionData.answer = sdp;
-        console.log(`Stored answer for session ${sessionId}`);
-        break;
-
-      case "candidate":
-        if (candidate) {
-          signalingData.set(sessionId, {
-            ...sessionData,
-            candidates: [...sessionData.candidates, candidate],
-          });
-          console.log(
-            `Added ICE candidate for session ${sessionId}, total: ${sessionData.candidates.length + 1}`
-          );
-        }
-        break;
-
-      default:
-        return new Response(JSON.stringify({ error: "Invalid message type" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        });
-    }
-
-    // Update session data
-    signalingData.set(sessionId, sessionData);
-
-    // Return success
     return new Response(
-      JSON.stringify({
-        message: "Signaling data received",
-        type: type,
-      }),
+      JSON.stringify({ message: "Signaling data received", type }),
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -143,7 +118,6 @@ export const GET: APIRoute = async ({ request }) => {
       `Returning data for session ${sessionId}: offer=${!!data.offer}, answer=${!!data.answer}, candidates=${data.candidates.length}`
     );
 
-    // Return the session data
     return new Response(JSON.stringify(data), {
       status: 200,
       headers: { "Content-Type": "application/json" },

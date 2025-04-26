@@ -24,7 +24,6 @@ export class InitiatorManager {
 
           if (event.candidate) {
             // Send each candidate as it's generated
-            // const candidateJson = JSON.stringify(event.candidate);
             console.log("Sending ICE candidate:", event.candidate);
 
             const body = {
@@ -130,7 +129,7 @@ export class InitiatorManager {
       } catch (err) {
         console.error("Error polling for updates:", err);
       }
-    }, 1000); // Poll every second for lower latency
+    }, 3000); // Poll every second for lower latency
   }
 
   cleanup() {
