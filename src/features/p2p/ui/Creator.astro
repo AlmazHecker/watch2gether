@@ -8,7 +8,9 @@ import Button from "@/shared/ui/button.astro";
 <div id="connection-section" class="space-y-4">
   <div class="space-y-6">
     <div class="rounded-md">
-      <p id="status" class="whitespace-normal text-sm text-gray-600"></p>
+      <p id="status" class="whitespace-normal text-sm text-gray-600">
+        Click "Create Session" button and share generated SessionID
+      </p>
     </div>
 
     <Button id="createOfferBtn">Create Session</Button>
@@ -16,8 +18,6 @@ import Button from "@/shared/ui/button.astro";
 
   <script>
     import { InitiatorManager } from "../../connection/lib/initiator";
-    import { updateStatus } from "../../logging/lib";
-    updateStatus('Click "Create Session" button and share generated SessionID');
 
     const initiatorManager = new InitiatorManager(window.pc);
     initiatorManager.setupListeners();

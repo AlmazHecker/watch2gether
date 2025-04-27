@@ -1,48 +1,93 @@
-# Astro Starter Kit: Basics
+# Watch2gether
 
-```sh
-npm create astro@latest -- --template basics
-```
+Simple WebRTC based website that allows you to watch youtube together with friend. All synchronized through WebRTC
+Peer-to-peer connections.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/basics)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/basics)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/basics/devcontainer.json)
+## Features
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+- **Synchronized Video Watching**: Watch YouTube videos together with playback synchronized
+- **Real-time Chat**: Chat while watching videos together
+- **Live Stream**: Go Live while watching videos together
+- **Simple Session Sharing**: Create a session with one click and share the ID with friends
+- **No Account Required**: Join instantly without registration or login
+- **Responsive Design**: Works on desktop and mobile devices
 
-![just-the-basics](https://github.com/withastro/astro/assets/2244813/a0a5533c-a856-4198-8470-2d67b1d7c554)
+## How It Works
 
-## 🚀 Project Structure
+Watch2gether uses WebRTC for direct browser-to-browser communication:
 
-Inside of your Astro project, you'll see the following folders and files:
+1. The session creator (host) generates a unique session ID
+2. Friends join using this session ID
+3. Video playback events (play, pause, seek) are synchronized across browsers
+4. Chat messages are transmitted directly between participants
+5. All media remains synchronized regardless of individual network conditions
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src/
-│   ├── layouts/
-│   │   └── Layout.astro
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+## Getting Started
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+### For Viewers
 
-## 🧞 Commands
+1. Visit the [Watch2gether website](watch2gether-phi.vercel.app)
+2. Enter a session ID shared by a friend or create your own session
+3. Start watching and chatting together!
 
-All commands are run from the root of the project, from a terminal:
+### For Developers
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+#### Prerequisites
 
-## 👀 Want to learn more?
+- Modern web browser with WebRTC support
+- Node.js and npm (for development)
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+#### Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/almazhecker/watch2gether.git
+   cd watch2gether
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+   Go to https://localhost:4321, NOT http (WebRTC requires https)
+
+## Usage Guide
+
+### Creating a Session
+
+1. Click the "Create Session" button
+2. Share the generated session ID with friends (automatically copied to clipboard)
+3. The session ID remains active for 30 seconds or until someone joins
+
+### Joining a Session
+
+1. Enter the session ID shared by the host
+2. Click "Join Session"
+3. Start watching together once connected
+
+### Controlling Playback
+
+- Any participant can play, pause, or seek in the video
+- All changes are instantly synchronized to other participants
+- New videos can be loaded by entering a YouTube URL or video ID
+
+## Technical Implementation
+
+### WebRTC Connection Flow
+
+1. Host creates an offer and session ID
+2. Session ID and offer are sent to the signaling server
+3. Joining peer retrieves the offer using the session ID
+4. Joiner creates an answer and sends it to the signaling server
+5. Host retrieves the answer
+6. ICE candidates are exchanged through the signaling server
+7. Direct peer-to-peer connection is established
