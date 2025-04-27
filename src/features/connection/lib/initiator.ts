@@ -29,14 +29,14 @@ export class InitiatorManager extends BaseConnectionManager {
           }),
         });
 
-        updateStatus(
-          `Session created! Share the session ID: ${this.sessionId}`
-        );
-
         // Set up countdown timer
         const timer = setInterval(() => {
           timeLeft--;
-          updateStatus(`SessionID is available for ${timeLeft} seconds`);
+          updateStatus(
+            `
+            Session created! Share the sessionID: ${this.sessionId}\n
+            SessionID is available for ${timeLeft} seconds`
+          );
 
           if (timeLeft <= 0) {
             clearInterval(timer);
