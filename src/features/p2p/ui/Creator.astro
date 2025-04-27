@@ -1,6 +1,5 @@
 ---
 import Chat from "./Chat.astro";
-import Input from "@/shared/ui/input.astro";
 import Button from "@/shared/ui/button.astro";
 ---
 
@@ -12,34 +11,13 @@ import Button from "@/shared/ui/button.astro";
       <p id="status" class="text-sm text-gray-600"></p>
     </div>
 
-    <div class="space-y-2">
-      <label class="text-sm text-gray-600">Video Source Link(Optional)</label>
-      <Input
-        id="videoSourceLink"
-        placeholder="Paste youtube or any video link"
-      />
-    </div>
-
     <Button id="createOfferBtn">Create Session</Button>
   </div>
 
   <script>
-    import { initializePeerConnection } from "../../connection/lib/initializePeerConnection";
     import { InitiatorManager } from "../../connection/lib/initiator";
     import { updateStatus } from "../../logging/lib";
-    import { setupVideoPlayer } from "@features/video/lib/setupVideoPlayer";
-    initializePeerConnection();
-    updateStatus(
-      'First, paste video link and then click "Create Session" button'
-    );
-
-    const videoSourceLink = document.getElementById(
-      "videoSourceLink"
-    )! as HTMLInputElement;
-
-    window.videoChannel.addEventListener("open", () => {
-      setupVideoPlayer(videoSourceLink.value);
-    });
+    updateStatus('Click "Create Session" button and share generated SessionID');
 
     const initiatorManager = new InitiatorManager(window.pc);
     initiatorManager.setupListeners();

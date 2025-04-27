@@ -1,23 +1,32 @@
 import type { VideoCommand, VideoPlayer } from "../types/types";
 
 export class VideoSyncManager {
-  private videoPlayer: VideoPlayer;
+  private videoPlayer!: VideoPlayer; // late init 100%
   private syncChannel: RTCDataChannel;
   private suppressEvents: boolean = false;
 
-  constructor(videoPlayer: VideoPlayer, syncChannel: RTCDataChannel) {
-    this.videoPlayer = videoPlayer;
+  constructor(syncChannel: RTCDataChannel) {
     this.syncChannel = syncChannel;
   }
 
-  public setVideoSource = (videoSource: string) => {
+  public setVideoPlayer(videoPlayer: VideoPlayer) {
+    if (this.videoPlayer?.name === videoPlayer.name) return;
+
+    this.videoPlayer = videoPlayer;
+  }
+
+  public setLocalVideoSource(videoSource: string) {
+    if (this.videoPlayer) this.videoPlayer.cleanup();
+
+    this.videoPlayer.setSource(videoSource);
+    this.setupListeners();
+  }
+
+  public setRemoteVideoSource = (videoSource: string) => {
     this.sendVideoCommand({ type: "video-source", src: videoSource });
-    this.setupListeners(videoSource);
   };
 
-  public setupListeners(src?: string) {
-    if (src) this.videoPlayer.setSource(src);
-
+  public setupListeners() {
     this.videoPlayer.addEventListener("play", async () => {
       if (!this.suppressEvents) {
         const currentTime = await this.videoPlayer.getCurrentTime();
@@ -43,6 +52,8 @@ export class VideoSyncManager {
   private async handleSyncCommand(command: VideoCommand) {
     switch (command.type) {
       case "video-source":
+        console.log("damn");
+
         this.videoPlayer.setSource(command.src as string);
         break;
       case "play": {

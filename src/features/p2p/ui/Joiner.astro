@@ -24,18 +24,7 @@ import Input from "@/shared/ui/input.astro";
   </div>
 
   <script>
-    import { initializePeerConnection } from "../../connection/lib/initializePeerConnection";
     import { JoinerManager } from "../../connection/lib/joiner";
-    import { setupVideoPlayer } from "@features/video/lib/setupVideoPlayer";
-    initializePeerConnection();
-
-    window.videoChannel.addEventListener("message", async event => {
-      const message = JSON.parse(event.data);
-
-      if (message.type === "video-source" && message.src) {
-        setupVideoPlayer(message.src);
-      }
-    });
 
     const joinerManager = new JoinerManager(window.pc);
     joinerManager.setupListeners();

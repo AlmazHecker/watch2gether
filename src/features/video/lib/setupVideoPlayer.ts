@@ -1,40 +1,42 @@
 import type { VideoPlayer } from "../types/types";
 import { HTML5VideoPlayer } from "./HTML5VideoPlayer";
 import { YouTubeVideoPlayer } from "./YoutubeVideoPlayer";
-import { VideoSyncManager } from "@/features/video/lib/VideoSyncManager";
 import { isYoutubeUrl } from "@/shared/lib/utils";
 
 export function VideoPlayerFactory(
   type: "html5" | "youtube",
-  element: HTMLVideoElement | string
+  element: HTMLVideoElement | HTMLElement
 ): VideoPlayer {
   if (type === "html5") {
     return new HTML5VideoPlayer(element as HTMLVideoElement);
   } else if (type === "youtube") {
-    return new YouTubeVideoPlayer(element as string);
+    return new YouTubeVideoPlayer(element);
   }
   throw new Error("Unsupported video player type");
 }
 
-export function setupVideoPlayer(videoUrl: string) {
-  if (videoUrl.trim() === "") return;
+export function setupVideoPlayer(videoUrl: string): VideoPlayer {
+  const videoContainer = document.getElementById("videoContainer");
+  if (!videoContainer) throw alert("NO VIDEO CONTAINER FOUND >:(");
 
-  const html5Video = document.getElementById("sharedVideo") as HTMLVideoElement;
-  const YTVideo = document.getElementById("youtube-player") as HTMLElement;
+  const html5Player = document.getElementById(
+    "html5-player"
+  ) as HTMLVideoElement;
+
+  const YTPlayer = document.getElementById("youtube-player") as HTMLElement;
+
+  html5Player.classList.add("hidden");
+  YTPlayer.classList.add("hidden");
 
   let videoPlayer: VideoPlayer;
 
   if (isYoutubeUrl(videoUrl)) {
-    YTVideo.classList.remove("hidden");
-    videoPlayer = VideoPlayerFactory("youtube", "youtube-player");
+    YTPlayer.classList.remove("hidden");
+    videoPlayer = VideoPlayerFactory("youtube", YTPlayer);
   } else {
-    html5Video.classList.remove("hidden");
-    videoPlayer = VideoPlayerFactory("html5", html5Video);
+    html5Player.classList.remove("hidden");
+    videoPlayer = VideoPlayerFactory("html5", html5Player);
   }
 
-  const videoSyncManager = new VideoSyncManager(
-    videoPlayer,
-    window.videoChannel
-  );
-  videoSyncManager.setVideoSource(videoUrl);
+  return videoPlayer;
 }

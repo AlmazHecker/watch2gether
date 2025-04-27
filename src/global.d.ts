@@ -7,6 +7,9 @@ declare interface Window {
   chatChannel: RTCDataChannel;
   videoChannel: RTCDataChannel;
   liveStreamChannel: RTCDataChannel;
+
+  // YouTube API
+  onYouTubeIframeAPIReady: () => void;
 }
 
 declare global {

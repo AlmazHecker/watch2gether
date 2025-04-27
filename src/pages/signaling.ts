@@ -77,7 +77,6 @@ export const GET: APIRoute = async ({ request }) => {
     }
 
     const data = signalingData.get(sessionId);
-    console.log(data, "Requested session data");
 
     if (!data) {
       return new Response(

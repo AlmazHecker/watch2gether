@@ -10,7 +10,7 @@ export class InitiatorManager extends BaseConnectionManager {
   async setupListeners() {
     createOfferBtn.addEventListener("click", async () => {
       this.sessionId = crypto.randomUUID();
-      updateStatus(`Created session ID: ${this.sessionId}`);
+      let timeLeft = 30;
 
       try {
         this.setupIceCandidateHandler();
@@ -30,8 +30,20 @@ export class InitiatorManager extends BaseConnectionManager {
         });
 
         updateStatus(
-          `Offer created! Share the offer and session ID: ${this.sessionId}`
+          `Session created! Share the session ID: ${this.sessionId}`
         );
+
+        // Set up countdown timer
+        const timer = setInterval(() => {
+          timeLeft--;
+          updateStatus(`SessionID is available for ${timeLeft} seconds`);
+
+          if (timeLeft <= 0) {
+            clearInterval(timer);
+            createOfferBtn.disabled = false;
+          }
+        }, 1000);
+
         navigator.clipboard.writeText(this.sessionId);
         alert("Session copied to clipboard!");
 
@@ -50,6 +62,7 @@ export class InitiatorManager extends BaseConnectionManager {
         });
       } catch (err) {
         updateStatus("Error creating offer: " + err);
+        createOfferBtn.disabled = false;
       }
     });
   }

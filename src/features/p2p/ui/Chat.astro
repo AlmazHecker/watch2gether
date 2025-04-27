@@ -9,7 +9,7 @@ import Button from "@/shared/ui/button.astro";
   <div id="videoContainer" class="space-y-2">
     <!-- HTML5 Video Player -->
     <video
-      id="sharedVideo"
+      id="html5-player"
       class="hidden w-full rounded-lg"
       controls
       preload="auto"></video>
@@ -24,6 +24,11 @@ import Button from "@/shared/ui/button.astro";
     <div class="size-[256px]">
       <video id="localVideo" class="size-full rounded-lg"></video>
     </div>
+  </div>
+
+  <div class="flex gap-2">
+    <Input id="videoLink" type="text" placeholder="Change Video Source Link" />
+    <Button id="changeVideoBtn">Change</Button>
   </div>
 
   <div class="space-y-2">
@@ -44,9 +49,13 @@ import Button from "@/shared/ui/button.astro";
 </div>
 
 <script>
+  import { setupVideoPlayer } from "@/features/video/lib/setupVideoPlayer";
   import { ChatManager } from "../../chat/lib";
   import { LiveStreamManager } from "../../live-stream/lib/LiveStreamManager";
+  import { initializePeerConnection } from "@/features/connection/lib/initializePeerConnection";
+  import { VideoSyncManager } from "@/features/video/lib/VideoSyncManager";
 
+  initializePeerConnection();
   document.addEventListener("DOMContentLoaded", () => {
     const connectionSection = document.getElementById("connection-section")!;
 
@@ -61,6 +70,7 @@ import Button from "@/shared/ui/button.astro";
       connectionSection.classList.add("hidden");
     });
 
+    // LIVE-STREAM START
     const remoteVideo = document.getElementById(
       "remoteVideo"
     ) as HTMLVideoElement;
@@ -87,4 +97,44 @@ import Button from "@/shared/ui/button.astro";
       liveStreamManager.stopStream()
     );
   });
+  // LIVE STREAM END
+
+  // VIDEO SOURCE START
+
+  const videoSourceInput = document.getElementById(
+    "videoLink"
+  ) as HTMLInputElement;
+
+  const changeVideoSourceBtn = document.getElementById(
+    "changeVideoBtn"
+  ) as HTMLButtonElement;
+
+  const videoSyncManager = new VideoSyncManager(window.videoChannel);
+
+  // Set new source
+  changeVideoSourceBtn.addEventListener("click", e => {
+    if (videoSourceInput.value.trim() === "") alert("No videolink provided :(");
+
+    videoSyncManager.setVideoPlayer(setupVideoPlayer(videoSourceInput.value));
+    videoSyncManager.setLocalVideoSource(videoSourceInput.value);
+    videoSyncManager.setRemoteVideoSource(videoSourceInput.value);
+    videoSourceInput.value = "";
+  });
+
+  window.videoChannel.addEventListener("message", async event => {
+    const message = JSON.parse(event.data);
+
+    if (message.type === "video-source" && message.src) {
+      videoSyncManager.setVideoPlayer(setupVideoPlayer(message.src));
+      videoSyncManager.setLocalVideoSource(message.src);
+    }
+  });
+
+  // VIDEO SOURCE END
+
+  // There's an issue with switching to another YouTube video.
+  // The reason for that is when user switches video, new instance of video player created.
+  // Meaning, it's listeners, handlers, iframe elements, etc are lost and can't be cleared
+
+  // As a solution, we can just upgrade src of the player & do cleanup
 </script>

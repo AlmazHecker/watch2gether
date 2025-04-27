@@ -12,6 +12,7 @@ export interface VideoCommand {
 }
 
 export interface VideoPlayer {
+  name: string;
   play(): Promise<void>;
   pause(): void;
   setSource(src: string): void;
@@ -19,4 +20,5 @@ export interface VideoPlayer {
   setCurrentTime(time: number): Promise<void>;
   addEventListener(event: string, listener: () => void): void;
   removeEventListener(event: string, listener: () => void): void;
+  cleanup: () => Promise<void>;
 }
