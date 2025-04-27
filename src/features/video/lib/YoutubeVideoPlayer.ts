@@ -10,12 +10,7 @@ export class YouTubeVideoPlayer implements VideoPlayer {
 
   constructor(container: HTMLElement) {
     this.readyPromise = new Promise<void>(resolve => {
-      if (!window.YT) {
-        const tag = document.createElement("script");
-        tag.src = "https://www.youtube.com/iframe_api";
-        const firstScriptTag = document.getElementsByTagName("script")[0];
-        firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-      }
+      if (!window.YT) this.setupYTApi();
 
       const previousCallback = window.onYouTubeIframeAPIReady;
       window.onYouTubeIframeAPIReady = () => {
@@ -45,6 +40,13 @@ export class YouTubeVideoPlayer implements VideoPlayer {
     });
   }
 
+  private setupYTApi() {
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName("script")[0];
+    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+  }
+
   private processPendingEvents(): void {
     this.pendingEvents.forEach((listeners, event) => {
       listeners.forEach(listener => {
@@ -65,6 +67,8 @@ export class YouTubeVideoPlayer implements VideoPlayer {
   }
 
   async setSource(src: string): Promise<void> {
+    await this.readyPromise;
+
     const videoId = this.extractVideoId(src);
     this.videoId = videoId;
 

@@ -9,9 +9,12 @@ export class VideoSyncManager {
     this.syncChannel = syncChannel;
   }
 
-  public setVideoPlayer(videoPlayer: VideoPlayer) {
-    if (this.videoPlayer?.name === videoPlayer.name) return;
+  public getVideoPlayerName() {
+    return this.videoPlayer?.name;
+  }
 
+  public setVideoPlayer(videoPlayer: VideoPlayer) {
+    // if (this.videoPlayer?.name === videoPlayer.name) return;
     this.videoPlayer = videoPlayer;
   }
 

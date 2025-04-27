@@ -53,6 +53,7 @@ import Button from "@/shared/ui/button.astro";
   import { LiveStreamManager } from "../../live-stream/lib/LiveStreamManager";
   import { initializePeerConnection } from "@/features/connection/lib/initializePeerConnection";
   import { VideoSyncManager } from "@/features/video/lib/VideoSyncManager";
+  import { isYoutubeUrl } from "@/shared/lib/utils";
 
   initializePeerConnection();
   document.addEventListener("DOMContentLoaded", () => {
@@ -114,7 +115,14 @@ import Button from "@/shared/ui/button.astro";
   changeVideoSourceBtn.addEventListener("click", e => {
     if (videoSourceInput.value.trim() === "") alert("No videolink provided :(");
 
-    videoSyncManager.setVideoPlayer(setupVideoPlayer(videoSourceInput.value));
+    const playerType = isYoutubeUrl(videoSourceInput.value)
+      ? "yt-player"
+      : "html5-player";
+
+    if (videoSyncManager.getVideoPlayerName() !== playerType) {
+      videoSyncManager.setVideoPlayer(setupVideoPlayer(videoSourceInput.value));
+    }
+
     videoSyncManager.setLocalVideoSource(videoSourceInput.value);
     videoSyncManager.setRemoteVideoSource(videoSourceInput.value);
     videoSourceInput.value = "";
@@ -124,7 +132,13 @@ import Button from "@/shared/ui/button.astro";
     const message = JSON.parse(event.data);
 
     if (message.type === "video-source" && message.src) {
-      videoSyncManager.setVideoPlayer(setupVideoPlayer(message.src));
+      const playerType = isYoutubeUrl(message.src)
+        ? "yt-player"
+        : "html5-player";
+
+      if (videoSyncManager.getVideoPlayerName() !== playerType) {
+        videoSyncManager.setVideoPlayer(setupVideoPlayer(message.src));
+      }
       videoSyncManager.setLocalVideoSource(message.src);
     }
   });

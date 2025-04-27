@@ -49,6 +49,7 @@ export class InitiatorManager extends BaseConnectionManager {
 
         this.startPolling(async data => {
           if (data.answer && !this.pc.remoteDescription) {
+            clearInterval(timer);
             console.log("Received answer:", data.answer);
             await this.pc.setRemoteDescription(
               new RTCSessionDescription(data.answer)
