@@ -3,21 +3,6 @@ import type { APIRoute } from "astro";
 
 const signalingData = new Map<string, Signal>();
 
-// Clean up типа
-const EXPIRATION_TIME = 30 * 60 * 1000; // 30 minutes
-setInterval(
-  () => {
-    const now = Date.now();
-    for (const [sessionId, data] of signalingData.entries()) {
-      if (now - data.createdAt > EXPIRATION_TIME) {
-        signalingData.delete(sessionId);
-        console.log(`Session ${sessionId} expired and removed`);
-      }
-    }
-  },
-  5 * 60 * 1000 // 5 minutes check
-);
-
 export const POST: APIRoute = async ({ request }) => {
   try {
     const data = await request.json();
