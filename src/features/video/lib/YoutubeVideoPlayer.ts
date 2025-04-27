@@ -1,7 +1,7 @@
 import type { VideoPlayer } from "../types/types";
 
 export class YouTubeVideoPlayer implements VideoPlayer {
-  public name = "yt-player";
+  public name: VideoPlayer["name"] = "yt-player";
   private player: YT.Player | null = null;
   private isReady: boolean = false;
   private pendingEvents: Map<string, (() => void)[]> = new Map();

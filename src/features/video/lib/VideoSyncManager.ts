@@ -14,7 +14,6 @@ export class VideoSyncManager {
   }
 
   public setVideoPlayer(videoPlayer: VideoPlayer) {
-    // if (this.videoPlayer?.name === videoPlayer.name) return;
     this.videoPlayer = videoPlayer;
   }
 
@@ -55,8 +54,6 @@ export class VideoSyncManager {
   private async handleSyncCommand(command: VideoCommand) {
     switch (command.type) {
       case "video-source":
-        console.log("damn");
-
         this.videoPlayer.setSource(command.src as string);
         break;
       case "play": {

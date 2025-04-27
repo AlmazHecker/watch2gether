@@ -6,7 +6,7 @@ type ListenerEntry = {
 };
 
 export class HTML5VideoPlayer implements VideoPlayer {
-  public name = "html5-player";
+  public name: VideoPlayer["name"] = "html5-player";
   private videoElement: HTMLVideoElement;
   private listeners: ListenerEntry[] = [];
 

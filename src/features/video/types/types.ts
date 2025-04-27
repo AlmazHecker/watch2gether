@@ -12,7 +12,7 @@ export interface VideoCommand {
 }
 
 export interface VideoPlayer {
-  name: string;
+  name: "html5-player" | "yt-player";
   play(): Promise<void>;
   pause(): void;
   setSource(src: string): void;

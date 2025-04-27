@@ -53,7 +53,7 @@ import Button from "@/shared/ui/button.astro";
   import { LiveStreamManager } from "../../live-stream/lib/LiveStreamManager";
   import { initializePeerConnection } from "@/features/connection/lib/initializePeerConnection";
   import { VideoSyncManager } from "@/features/video/lib/VideoSyncManager";
-  import { isYoutubeUrl } from "@/shared/lib/utils";
+  import { getPlayerType } from "@/shared/lib/utils";
 
   initializePeerConnection();
   document.addEventListener("DOMContentLoaded", () => {
@@ -115,12 +115,10 @@ import Button from "@/shared/ui/button.astro";
   changeVideoSourceBtn.addEventListener("click", e => {
     if (videoSourceInput.value.trim() === "") alert("No videolink provided :(");
 
-    const playerType = isYoutubeUrl(videoSourceInput.value)
-      ? "yt-player"
-      : "html5-player";
+    const playerType = getPlayerType(videoSourceInput.value);
 
     if (videoSyncManager.getVideoPlayerName() !== playerType) {
-      videoSyncManager.setVideoPlayer(setupVideoPlayer(videoSourceInput.value));
+      videoSyncManager.setVideoPlayer(setupVideoPlayer(playerType));
     }
 
     videoSyncManager.setLocalVideoSource(videoSourceInput.value);
@@ -132,22 +130,15 @@ import Button from "@/shared/ui/button.astro";
     const message = JSON.parse(event.data);
 
     if (message.type === "video-source" && message.src) {
-      const playerType = isYoutubeUrl(message.src)
-        ? "yt-player"
-        : "html5-player";
+      const playerType = getPlayerType(message.src);
 
       if (videoSyncManager.getVideoPlayerName() !== playerType) {
-        videoSyncManager.setVideoPlayer(setupVideoPlayer(message.src));
+        videoSyncManager.setVideoPlayer(setupVideoPlayer(playerType));
       }
+
       videoSyncManager.setLocalVideoSource(message.src);
     }
   });
 
   // VIDEO SOURCE END
-
-  // There's an issue with switching to another YouTube video.
-  // The reason for that is when user switches video, new instance of video player created.
-  // Meaning, it's listeners, handlers, iframe elements, etc are lost and can't be cleared
-
-  // As a solution, we can just upgrade src of the player & do cleanup
 </script>
