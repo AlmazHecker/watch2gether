@@ -1,8 +1,9 @@
 import type { Signal } from "../types/types";
 
 export abstract class BaseConnectionManager {
-  protected offer?: RTCSessionDescriptionInit;
-  protected answer?: RTCSessionDescriptionInit;
+  protected sdp?: RTCSessionDescriptionInit;
+  // protected offer?: RTCSessionDescriptionInit;
+  // protected answer?: RTCSessionDescriptionInit;
 
   protected sessionId: string | null = null;
   protected pollingInterval: number | null = null;
@@ -19,9 +20,9 @@ export abstract class BaseConnectionManager {
 
         const body = {
           sessionId: this.sessionId,
-          type: "candidate",
+          type: "set",
           candidate: event.candidate,
-          offer: this.offer,
+          sdp: this.sdp,
         };
 
         try {

@@ -15,18 +15,9 @@ export class InitiatorManager extends BaseConnectionManager {
       try {
         this.setupIceCandidateHandler();
 
-        this.offer = await this.pc.createOffer();
-        await this.pc.setLocalDescription(this.offer);
+        this.sdp = await this.pc.createOffer();
+        await this.pc.setLocalDescription(this.sdp);
         createOfferBtn.disabled = true;
-
-        await fetch("/signaling", {
-          method: "POST",
-          body: JSON.stringify({
-            sessionId: this.sessionId,
-            type: "offer",
-            sdp: this.pc.localDescription,
-          }),
-        });
 
         // Set up countdown timer
         const timer = setInterval(() => {

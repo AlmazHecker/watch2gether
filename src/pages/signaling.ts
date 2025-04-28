@@ -3,6 +3,13 @@ import type { APIRoute } from "astro";
 import fs from "fs";
 import path from "path";
 
+type Response = {
+  sdp: RTCSessionDescriptionInit;
+  sessionId: string;
+  type: string;
+  candidate: RTCIceCandidateInit;
+};
+
 const sessionsDir = "/tmp/sessions";
 
 if (!fs.existsSync(sessionsDir)) {
@@ -12,30 +19,27 @@ if (!fs.existsSync(sessionsDir)) {
 export const POST: APIRoute = async ({ request }) => {
   try {
     const data = await request.json();
-    const { sessionId, type, sdp, candidate } = data;
+    const { sessionId, type, sdp, candidate } = data as Response;
 
     if (!sessionId) {
       return new Response(JSON.stringify({ error: "Session ID is required" }), {
         status: 400,
-        headers: { "Content-Type": "application/json" },
       });
     }
 
     const sessionFilePath = path.join(sessionsDir, `${sessionId}.txt`);
 
-    let currentSession: Signal = { createdAt: Date.now(), candidates: [] };
+    let currentSession: Signal = { candidates: [] };
     if (fs.existsSync(sessionFilePath)) {
       const fileData = fs.readFileSync(sessionFilePath, "utf-8");
       currentSession = JSON.parse(fileData);
     }
 
-    if (type === "offer") {
-      currentSession.offer = sdp;
-    } else if (type === "answer") {
-      currentSession.answer = sdp;
-    } else if (type === "candidate" && candidate) {
+    if (type === "set" && candidate) {
       currentSession.candidates.push(candidate);
-      currentSession.offer = sdp;
+
+      if (sdp && sdp.type === "offer") currentSession.offer = sdp;
+      if (sdp && sdp.type === "answer") currentSession.answer = sdp;
     } else if (type === "source") {
       return new Response(JSON.stringify(currentSession));
     } else {
@@ -49,7 +53,9 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(
       JSON.stringify({ message: "Signaling data received", type })
     );
-  } catch (_e) {
+  } catch (e) {
+    console.log(e);
+
     return new Response(
       JSON.stringify({
         error: "Internal server error processing signaling data",
