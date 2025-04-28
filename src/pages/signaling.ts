@@ -9,22 +9,6 @@ if (!fs.existsSync(sessionsDir)) {
   fs.mkdirSync(sessionsDir, { recursive: true });
 }
 
-// cleanup типа
-const cleanUpFiles = () => {
-  const files = fs.readdirSync(sessionsDir);
-  if (files.length > 30) {
-    files.sort((a, b) => {
-      const statA = fs.statSync(path.join(sessionsDir, a));
-      const statB = fs.statSync(path.join(sessionsDir, b));
-      return statA.birthtimeMs - statB.birthtimeMs;
-    });
-
-    const fileToDelete = files[0];
-    fs.unlinkSync(path.join(sessionsDir, fileToDelete));
-    console.log(`Deleted old file: ${fileToDelete}`);
-  }
-};
-
 export const POST: APIRoute = async ({ request }) => {
   try {
     const data = await request.json();
@@ -67,8 +51,6 @@ export const POST: APIRoute = async ({ request }) => {
     console.log(
       `Saved signaling data for session ${sessionId} to ${sessionFilePath}`
     );
-
-    cleanUpFiles();
 
     return new Response(
       JSON.stringify({ message: "Signaling data received", type }),
