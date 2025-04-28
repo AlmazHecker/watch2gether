@@ -1,7 +1,29 @@
 import type { Signal } from "@/features/connection/types/types";
 import type { APIRoute } from "astro";
+import fs from "fs";
+import path from "path";
 
-const signalingData = new Map<string, Signal>();
+const sessionsDir = "/tmp/sessions";
+
+if (!fs.existsSync(sessionsDir)) {
+  fs.mkdirSync(sessionsDir, { recursive: true });
+}
+
+// cleanup типа
+const cleanUpFiles = () => {
+  const files = fs.readdirSync(sessionsDir);
+  if (files.length > 30) {
+    files.sort((a, b) => {
+      const statA = fs.statSync(path.join(sessionsDir, a));
+      const statB = fs.statSync(path.join(sessionsDir, b));
+      return statA.birthtimeMs - statB.birthtimeMs;
+    });
+
+    const fileToDelete = files[0];
+    fs.unlinkSync(path.join(sessionsDir, fileToDelete));
+    console.log(`Deleted old file: ${fileToDelete}`);
+  }
+};
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -17,11 +39,13 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // Always clone current data safely
-    const currentSession = signalingData.get(sessionId) || {
-      createdAt: Date.now(),
-      candidates: [],
-    };
+    const sessionFilePath = path.join(sessionsDir, `${sessionId}.txt`);
+
+    let currentSession: Signal = { createdAt: Date.now(), candidates: [] };
+    if (fs.existsSync(sessionFilePath)) {
+      const fileData = fs.readFileSync(sessionFilePath, "utf-8");
+      currentSession = JSON.parse(fileData);
+    }
 
     if (type === "offer") {
       currentSession.offer = sdp;
@@ -31,9 +55,7 @@ export const POST: APIRoute = async ({ request }) => {
       console.log(`Stored answer for session ${sessionId}`);
     } else if (type === "candidate" && candidate) {
       currentSession.candidates.push(candidate);
-      console.log(
-        `Added ICE candidate for session ${sessionId}, total: ${currentSession.candidates.length}`
-      );
+      console.log(`Added ICE candidate for session ${sessionId}`);
     } else {
       return new Response(JSON.stringify({ error: "Invalid message type" }), {
         status: 400,
@@ -41,7 +63,12 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    signalingData.set(sessionId, currentSession);
+    fs.writeFileSync(sessionFilePath, JSON.stringify(currentSession));
+    console.log(
+      `Saved signaling data for session ${sessionId} to ${sessionFilePath}`
+    );
+
+    cleanUpFiles();
 
     return new Response(
       JSON.stringify({ message: "Signaling data received", type }),
@@ -76,9 +103,8 @@ export const GET: APIRoute = async ({ request }) => {
       });
     }
 
-    const data = signalingData.get(sessionId);
-
-    if (!data) {
+    const sessionFilePath = path.join(sessionsDir, `${sessionId}.txt`);
+    if (!fs.existsSync(sessionFilePath)) {
       return new Response(
         JSON.stringify({
           message: "No data found for this session",
@@ -90,6 +116,8 @@ export const GET: APIRoute = async ({ request }) => {
         }
       );
     }
+
+    const data = JSON.parse(fs.readFileSync(sessionFilePath, "utf-8"));
 
     console.log(
       `Returning data for session ${sessionId}: offer=${!!data.offer}, answer=${!!data.answer}, candidates=${data.candidates.length}`

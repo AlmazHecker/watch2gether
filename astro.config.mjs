@@ -9,6 +9,9 @@ import vercel from "@astrojs/vercel";
 // https://astro.build/config
 export default defineConfig({
   output: "server",
+
+  // Note that everything in this vite object runs only locally.
+  // SSL is used to fix WebRTC issue on mobile(WebRTC doesn't work on http on mobile idk why)
   vite: {
     plugins: [basicSsl()],
     server: {
