@@ -46,8 +46,8 @@ export class JoinerManager extends BaseConnectionManager {
         console.log("Setting remote description (offer):", offer);
         await this.pc.setRemoteDescription(new RTCSessionDescription(offer));
 
-        const answer = await this.pc.createAnswer();
-        await this.pc.setLocalDescription(answer);
+        this.answer = await this.pc.createAnswer();
+        await this.pc.setLocalDescription(this.answer);
 
         await fetch("/signaling", {
           method: "POST",

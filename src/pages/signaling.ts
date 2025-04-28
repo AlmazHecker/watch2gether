@@ -35,6 +35,7 @@ export const POST: APIRoute = async ({ request }) => {
       currentSession.answer = sdp;
     } else if (type === "candidate" && candidate) {
       currentSession.candidates.push(candidate);
+      currentSession.offer = sdp;
     } else if (type === "source") {
       return new Response(JSON.stringify(currentSession));
     } else {

@@ -15,8 +15,8 @@ export class InitiatorManager extends BaseConnectionManager {
       try {
         this.setupIceCandidateHandler();
 
-        const offer = await this.pc.createOffer();
-        await this.pc.setLocalDescription(offer);
+        this.offer = await this.pc.createOffer();
+        await this.pc.setLocalDescription(this.offer);
         createOfferBtn.disabled = true;
 
         await fetch("/signaling", {

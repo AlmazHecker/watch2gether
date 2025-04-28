@@ -1,6 +1,9 @@
 import type { Signal } from "../types/types";
 
 export abstract class BaseConnectionManager {
+  protected offer?: RTCSessionDescriptionInit;
+  protected answer?: RTCSessionDescriptionInit;
+
   protected sessionId: string | null = null;
   protected pollingInterval: number | null = null;
   protected processedCandidates = new Set<string>();
@@ -18,6 +21,7 @@ export abstract class BaseConnectionManager {
           sessionId: this.sessionId,
           type: "candidate",
           candidate: event.candidate,
+          offer: this.offer,
         };
 
         try {
