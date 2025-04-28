@@ -21,7 +21,6 @@ export class InitiatorManager extends BaseConnectionManager {
 
         await fetch("/signaling", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             sessionId: this.sessionId,
             type: "offer",

@@ -27,7 +27,11 @@ export class JoinerManager extends BaseConnectionManager {
 
         this.setupIceCandidateHandler();
 
-        const response = await fetch(`/signaling?sessionId=${this.sessionId}`);
+        const response = await fetch(`/signaling`, {
+          method: "POST",
+          body: JSON.stringify({ type: "source", sessionId: this.sessionId }),
+        });
+
         if (!response.ok) {
           throw new Error(
             `Server returned ${response.status}: ${response.statusText}`

@@ -50,7 +50,10 @@ export abstract class BaseConnectionManager {
       if (!this.sessionId) return;
 
       try {
-        const res = await fetch(`/signaling?sessionId=${this.sessionId}`);
+        const res = await fetch(`/signaling`, {
+          method: "POST",
+          body: JSON.stringify({ type: "source", sessionId: this.sessionId }),
+        });
         if (!res.ok) {
           console.error("Error polling signaling server:", res.status);
           return;
