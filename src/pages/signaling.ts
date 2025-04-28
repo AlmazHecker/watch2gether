@@ -9,62 +9,10 @@ if (!fs.existsSync(sessionsDir)) {
   fs.mkdirSync(sessionsDir, { recursive: true });
 }
 
-function getFilePaths(sessionId: string) {
-  return {
-    offer: path.join(sessionsDir, `${sessionId}-offer.json`),
-    answer: path.join(sessionsDir, `${sessionId}-answer.json`),
-    candidates: path.join(sessionsDir, `${sessionId}-candidates.json`),
-  };
-}
-
-function getOffer(sessionId: string) {
-  const offerPath = getFilePaths(sessionId).offer;
-  if (fs.existsSync(offerPath)) {
-    return JSON.parse(fs.readFileSync(offerPath, "utf-8"));
-  }
-  return null;
-}
-
-function getAnswer(sessionId: string) {
-  const answerPath = getFilePaths(sessionId).answer;
-  if (fs.existsSync(answerPath)) {
-    return JSON.parse(fs.readFileSync(answerPath, "utf-8"));
-  }
-  return null;
-}
-
-function getCandidates(sessionId: string): Signal["candidates"] {
-  const candidatesPath = getFilePaths(sessionId).candidates;
-  if (fs.existsSync(candidatesPath)) {
-    return JSON.parse(fs.readFileSync(candidatesPath, "utf-8"));
-  }
-  return [];
-}
-
-function addCandidate(sessionId: string, candidate: Signal["candidates"][0]) {
-  const candidatesPath = getFilePaths(sessionId).candidates;
-  const candidates = getCandidates(sessionId);
-  candidates.push(candidate);
-  fs.writeFileSync(candidatesPath, JSON.stringify(candidates));
-}
-
-function getSessionData(sessionId: string): Signal {
-  const createdAt = Date.now();
-
-  return {
-    createdAt,
-    offer: getOffer(sessionId),
-    answer: getAnswer(sessionId),
-    candidates: getCandidates(sessionId),
-  };
-}
-
 export const POST: APIRoute = async ({ request }) => {
   try {
     const data = await request.json();
     const { sessionId, type, sdp, candidate } = data;
-
-    console.log(`Received ${type} for session ${sessionId}`);
 
     if (!sessionId) {
       return new Response(JSON.stringify({ error: "Session ID is required" }), {
@@ -73,38 +21,39 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
+    const sessionFilePath = path.join(sessionsDir, `${sessionId}.txt`);
+
+    let currentSession: Signal = { createdAt: Date.now(), candidates: [] };
+    if (fs.existsSync(sessionFilePath)) {
+      const fileData = fs.readFileSync(sessionFilePath, "utf-8");
+      currentSession = JSON.parse(fileData);
+    }
+
     if (type === "offer") {
-      fs.writeFileSync(getFilePaths(sessionId).offer, JSON.stringify(sdp));
-      console.log(`Stored offer for session ${sessionId}`);
+      currentSession.offer = sdp;
     } else if (type === "answer") {
-      fs.writeFileSync(getFilePaths(sessionId).answer, JSON.stringify(sdp));
-      console.log(`Stored answer for session ${sessionId}`);
+      currentSession.answer = sdp;
     } else if (type === "candidate" && candidate) {
-      addCandidate(sessionId, candidate);
-      console.log(`Added ICE candidate for session ${sessionId}`);
+      currentSession.candidates.push(candidate);
     } else if (type === "source") {
-      const sessionData = getSessionData(sessionId);
-      return new Response(JSON.stringify(sessionData), {
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify(currentSession));
     } else {
       return new Response(JSON.stringify({ error: "Invalid message type" }), {
         status: 400,
-        headers: { "Content-Type": "application/json" },
       });
     }
 
+    fs.writeFileSync(sessionFilePath, JSON.stringify(currentSession));
+
     return new Response(
-      JSON.stringify({ message: "Signaling data received", type }),
-      { headers: { "Content-Type": "application/json" } }
+      JSON.stringify({ message: "Signaling data received", type })
     );
-  } catch (err) {
-    console.error("Error processing signaling request:", err);
+  } catch (_e) {
     return new Response(
       JSON.stringify({
         error: "Internal server error processing signaling data",
       }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500 }
     );
   }
 };

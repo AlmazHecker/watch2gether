@@ -25,8 +25,6 @@ export class JoinerManager extends BaseConnectionManager {
         joinChatBtn.disabled = true;
         updateStatus(`Connecting to session: ${this.sessionId}`);
 
-        this.setupIceCandidateHandler();
-
         const response = await fetch(`/signaling`, {
           method: "POST",
           body: JSON.stringify({ type: "source", sessionId: this.sessionId }),
@@ -62,6 +60,8 @@ export class JoinerManager extends BaseConnectionManager {
         });
 
         updateStatus("Answer created! Connection establishing...");
+
+        this.setupIceCandidateHandler();
 
         this.startPolling(async data => {
           if (data.candidates) {

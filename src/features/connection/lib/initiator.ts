@@ -43,7 +43,7 @@ export class InitiatorManager extends BaseConnectionManager {
           }
         }, 1000);
 
-        navigator.clipboard.writeText(this.sessionId);
+        await navigator.clipboard.writeText(this.sessionId);
         alert("Session copied to clipboard!");
 
         this.startPolling(async data => {
