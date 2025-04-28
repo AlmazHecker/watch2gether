@@ -35,19 +35,13 @@ export const POST: APIRoute = async ({ request }) => {
       currentSession = JSON.parse(fileData);
     }
 
-    if (type === "set" && candidate) {
-      currentSession.candidates.push(candidate);
+    if (sdp && sdp.type === "offer") currentSession.offer = sdp;
+    if (sdp && sdp.type === "answer") currentSession.answer = sdp;
+    if (candidate) currentSession.candidates.push(candidate);
 
-      if (sdp && sdp.type === "offer") currentSession.offer = sdp;
-      if (sdp && sdp.type === "answer") currentSession.answer = sdp;
-    } else if (type === "source") {
+    if (type === "source") {
       return new Response(JSON.stringify(currentSession));
-    } else {
-      return new Response(JSON.stringify({ error: "Invalid message type" }), {
-        status: 400,
-      });
     }
-
     fs.writeFileSync(sessionFilePath, JSON.stringify(currentSession));
 
     return new Response(
