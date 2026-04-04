@@ -1,6 +1,7 @@
 ---
 import "../assets/styles.css";
-import { pwaInfo } from "virtual:pwa-info";
+// import { pwaInfo } from "virtual:pwa-info";
+// {pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} />}
 ---
 
 <!doctype html>
@@ -16,8 +17,6 @@ import { pwaInfo } from "virtual:pwa-info";
     <link rel="mask-icon" href="/favicon.svg" color="#030712" />
     <meta name="msapplication-TileColor" content="#030712" />
     <meta name="theme-color" content="#030712" />
-
-    {pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} />}
   </head>
   <body class="font-mono antialiased">
     <slot />
